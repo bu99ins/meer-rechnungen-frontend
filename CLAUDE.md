@@ -15,7 +15,7 @@ This is the **frontend SPA** for the invoice management system. It provides:
 - Sender/company configuration management
 - Paginated list views and detailed forms
 - JWT-based authentication (Bearer token from localStorage)
-- Integration with the **invoices-back** backend API at `https://localhost:5001`
+- Integration with the **invoices-back** backend API (local dev: `http://localhost:5000` via docker-compose; deployments: the backend HTTPS URL from `VITE_API_URL`)
 
 ---
 
@@ -103,7 +103,8 @@ src/
 
 ### Base URL Configuration
 - **Environment Variable**: `VITE_API_URL`
-- **Default**: `https://localhost:5001` (from `.env`)
+- **Local dev default**: `http://localhost:5000` (from `.env.development`; the docker-compose backend). The frontend calls the backend directly and relies on its CORS policy — there is no Vite `/api` proxy.
+- **Deployments**: `VITE_API_URL` is injected at build time (points at the deployed backend HTTPS URL).
 - **Set in**: `src/main.tsx` → `axios.defaults.baseURL`
 
 ### Authentication
@@ -283,10 +284,12 @@ src/
 | `npm run preview` | Preview production build locally |
 
 ### Environment Setup
-Create `.env` in project root:
+Local development uses the committed `.env.development`, which targets the docker-compose backend:
 ```
-VITE_API_URL=https://localhost:5001
+VITE_API_URL=http://localhost:5000
 ```
+The backend's CORS policy allows `http://localhost:5173`, so no Vite proxy is needed. For deployed
+builds, `VITE_API_URL` is supplied at build time (the deployed backend's HTTPS URL) instead.
 
 ### Build Output
 - **Directory**: `dist/`
