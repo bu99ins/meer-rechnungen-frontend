@@ -1,0 +1,5 @@
+# Keep deploy/CI assets LF so shell scripts and workflows behave on Linux runners
+# regardless of the checkout platform.
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf

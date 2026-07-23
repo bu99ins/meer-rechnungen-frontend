@@ -1,0 +1,54 @@
+name: Deploy frontend
+run-name: Deploy frontend @ ${{ github.sha }}
+
+# Manual only — never auto-deploys on push or tag (spec: manually triggered pipelines).
+on:
+  workflow_dispatch:
+
+# Queue overlapping manual runs so a slower older run can't publish last.
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Fail fast if required config is missing, rather than silently shipping a broken build
+      # (an empty VITE_API_URL would make the app call its own origin).
+      - name: Check required config
+        run: |
+          test -n "${{ vars.VITE_API_URL }}" || { echo "::error::VITE_API_URL repo variable is not set"; exit 1; }
+          test -n "${{ vars.CLOUDFLARE_PROJECT_NAME }}" || { echo "::error::CLOUDFLARE_PROJECT_NAME repo variable is not set"; exit 1; }
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # DEPLOY GATE: `tsc -b && vite build` must succeed. A type/build error fails here and blocks the
+      # deploy. Unit tests and standalone ESLint are intentionally NOT run, so a failing test or lint
+      # error does not by itself block a deployment. VITE_API_URL bakes the deployed backend HTTPS URL
+      # into the bundle so the app calls the backend cross-origin (its CORS policy allows this origin).
+      - name: Build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: npm run build
+
+      # Deploy dist/ + the functions/ gate to Cloudflare Pages. The shared gate credential
+      # (GATE_USER / GATE_PASSWORD) lives in the Pages project's environment, not here.
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }}
