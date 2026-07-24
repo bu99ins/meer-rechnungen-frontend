@@ -20,11 +20,19 @@ jobs:
         uses: actions/checkout@v4
 
       # Fail fast if required config is missing, rather than silently shipping a broken build
-      # (an empty VITE_API_URL would make the app call its own origin).
+      # (an empty VITE_API_URL would make the app call its own origin; a missing gate key would ship a
+      # bundle the gated backend rejects with 401).
+      # Values reach the shell via env (not `${{ }}` inlined into the script) so a value containing
+      # shell metacharacters can't break or inject into the command.
       - name: Check required config
+        env:
+          API_URL: ${{ vars.VITE_API_URL }}
+          CF_PROJECT: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          GATE_KEY: ${{ secrets.VITE_API_GATE_KEY }}
         run: |
-          test -n "${{ vars.VITE_API_URL }}" || { echo "::error::VITE_API_URL repo variable is not set"; exit 1; }
-          test -n "${{ vars.CLOUDFLARE_PROJECT_NAME }}" || { echo "::error::CLOUDFLARE_PROJECT_NAME repo variable is not set"; exit 1; }
+          test -n "$API_URL" || { echo "::error::VITE_API_URL repo variable is not set"; exit 1; }
+          test -n "$CF_PROJECT" || { echo "::error::CLOUDFLARE_PROJECT_NAME repo variable is not set"; exit 1; }
+          test -n "$GATE_KEY" || { echo "::error::VITE_API_GATE_KEY secret is not set (backend edge-gate credential)"; exit 1; }
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -42,6 +50,11 @@ jobs:
       - name: Build
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          # Shared backend edge-gate credential baked into the bundle so API calls carry X-Api-Gate.
+          # A secret (not a var): interim barrier, replaced by JWT enforcement. Same value as the
+          # backend host's EDGE_GATE_KEY. Accepted interim weakness: it ends up in the built JS, which
+          # is itself only served behind the frontend's Basic-Auth gate.
+          VITE_API_GATE_KEY: ${{ secrets.VITE_API_GATE_KEY }}
         run: npm run build
 
       # Deploy dist/ + the functions/ gate to Cloudflare Pages. The shared gate credential
