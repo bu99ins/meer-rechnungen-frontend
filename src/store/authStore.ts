@@ -1,12 +1,20 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Identity } from '../types/user';
-import { clearSession, getIdentity, setSession, subscribe } from '../lib/session';
+import {
+  clearSession,
+  getIdentity,
+  getSessionEndedReason,
+  setSession,
+  subscribe,
+  type SessionEndedReason,
+} from '../lib/session';
 import { login as loginRequest } from '../services/users';
 import { describeApiError } from '../lib/problem';
 
 type State = {
   identity: Identity | null;
+  sessionEndedReason: SessionEndedReason | null;
   loading: boolean;
   error?: string;
 };
@@ -20,6 +28,7 @@ type Actions = {
 export const useAuthStore = create<State & Actions>()(
   devtools((set) => ({
     identity: getIdentity(),
+    sessionEndedReason: getSessionEndedReason(),
     loading: false,
     error: undefined,
 
@@ -43,4 +52,10 @@ export const useAuthStore = create<State & Actions>()(
   }))
 );
 
-subscribe(() => useAuthStore.setState({ identity: getIdentity() }, false, 'session/changed'));
+subscribe(() =>
+  useAuthStore.setState(
+    { identity: getIdentity(), sessionEndedReason: getSessionEndedReason() },
+    false,
+    'session/changed'
+  )
+);

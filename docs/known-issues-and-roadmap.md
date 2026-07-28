@@ -13,9 +13,15 @@
 - JWT obtained via `/login` (`src/pages/auth/LoginPage.tsx`) and held by `src/lib/session.ts`
   under `localStorage` keys `mvr.accessToken` / `mvr.refreshToken`. Every route except `/login` is
   gated by `src/components/RequireAuth.tsx`.
-- **Not yet implemented**: silent renewal via `POST /api/users/refresh`. An expired access token
-  currently reaches the backend as-is instead of being renewed first (see spec
-  [login-and-user-management.md](../specs/login-and-user-management.md), requirement 10).
+- On a 401, `src/lib/api.ts`'s response interceptor silently calls `POST /api/users/refresh` (the
+  backend requires both the old access token and the refresh token in that call) and replays the
+  original request. Concurrent 401s share a single in-flight refresh
+  (`src/lib/refreshDecision.js` holds the pure decision logic, unit-tested in
+  `test/refreshDecision.test.js`). A 403 (authenticated but lacking a permission claim) is passed
+  through untouched — it never triggers a refresh or a sign-out.
+- If renewal is rejected outright, the session is cleared with a reason
+  (`src/lib/session.ts`'s `SessionEndedReason`) so the login screen can show "Your session ended…"
+  distinctly from a rejected-credentials message.
 
 ### Interim backend edge gate
 - `VITE_API_GATE_KEY` is baked into the deployed bundle and sent as `X-Api-Gate` on every
@@ -33,10 +39,9 @@
 ## Recommendations / next steps
 
 1. **Add an error boundary** component to gracefully handle React errors
-2. **Implement token refresh** mechanism (if the backend supports it)
-3. **Expand unit tests** for services & stores (the `node --test` setup currently covers only
-   the edge gate)
-4. **Add E2E tests** (Playwright/Cypress) for workflows
-5. **Validate response schemas** (e.g., zod) at the service layer
-6. **Add loading skeletons** for better UX during data fetches
-7. **Document the backend API contract** in a shared schema (OpenAPI)
+2. **Expand unit tests** for services & stores (the `node --test` setup currently covers the edge
+   gate plus the pure logic in `src/lib/jwt.js`, `problem.js`, and `refreshDecision.js`)
+3. **Add E2E tests** (Playwright/Cypress) for workflows
+4. **Validate response schemas** (e.g., zod) at the service layer
+5. **Add loading skeletons** for better UX during data fetches
+6. **Document the backend API contract** in a shared schema (OpenAPI)

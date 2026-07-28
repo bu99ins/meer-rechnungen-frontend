@@ -9,6 +9,7 @@ const LoginPage: React.FC = () => {
   const login = useAuthStore((s) => s.login);
   const loading = useAuthStore((s) => s.loading);
   const error = useAuthStore((s) => s.error);
+  const sessionEndedReason = useAuthStore((s) => s.sessionEndedReason);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +24,8 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     await login(email, password);
   };
+
+  const message = error ?? (sessionEndedReason === 'ended' ? 'Your session ended. Please sign in again.' : undefined);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -50,7 +53,7 @@ const LoginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {message && <p className="text-sm text-red-600">{message}</p>}
           <button
             type="submit"
             disabled={loading || !email || !password}

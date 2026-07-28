@@ -39,13 +39,23 @@ export function getIdentity(): Identity | null {
   return { id, email, role };
 }
 
+export type SessionEndedReason = 'ended';
+
+let sessionEndedReason: SessionEndedReason | null = null;
+
+export function getSessionEndedReason(): SessionEndedReason | null {
+  return sessionEndedReason;
+}
+
 export function setSession(accessToken: string, refreshToken: string): void {
+  sessionEndedReason = null;
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   notify();
 }
 
-export function clearSession(): void {
+export function clearSession(reason?: SessionEndedReason): void {
+  sessionEndedReason = reason ?? null;
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   notify();
