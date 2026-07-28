@@ -30,8 +30,12 @@
 - No list-users endpoint exists on the backend, so there is no user table — only create (by email
   + password + role) and look-up-by-pasted-ID. `GET /api/users/{id}` returns no role, so the
   look-up screen states that plainly rather than guessing.
-- Update-email, role-set, and delete are not yet wired up (next increment); no password-change
-  endpoint exists on the backend at all yet (see the frontend spec's "Backend dependency" section).
+- From a looked-up user, an Admin can change the email, set the role, and delete the account
+  (each independently submittable, with its own loading/success/error state that resets on a fresh
+  look-up). The admin's own account cannot be the target of a role change or deletion — those
+  controls are absent (not merely disabled) when the looked-up id matches the signed-in identity.
+- No password-change endpoint exists on the backend at all yet, so there is no password UI (see
+  the frontend spec's "Backend dependency" section).
 
 ### Interim backend edge gate
 - `VITE_API_GATE_KEY` is baked into the deployed bundle and sent as `X-Api-Gate` on every

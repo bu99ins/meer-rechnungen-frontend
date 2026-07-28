@@ -20,3 +20,19 @@ export async function getUserById(userId: string): Promise<LookedUpUser> {
   const { data } = await api.get(`${base}/${encodeURIComponent(userId)}`);
   return data as LookedUpUser;
 }
+
+export async function updateUserEmail(userId: string, email: string): Promise<LookedUpUser> {
+  const api = getApi();
+  const { data } = await api.put(`${base}/${encodeURIComponent(userId)}`, { email });
+  return data as LookedUpUser;
+}
+
+export async function setUserRole(userId: string, role: Role): Promise<void> {
+  const api = getApi();
+  await api.post(`${base}/${encodeURIComponent(userId)}/role`, { newRole: role });
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const api = getApi();
+  await api.delete(`${base}/${encodeURIComponent(userId)}`);
+}

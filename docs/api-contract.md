@@ -34,9 +34,13 @@ The frontend integrates with the **invoices-back** backend API.
   `Admin`/`Manager` (`src/types/user.ts`'s `ROLES`).
 - `GET /api/users/{userId}` → `{id, email}` (no role). Requires `users:read`. Consumed by
   `getUserById()` from `UserLookup`.
-- Update (`PUT /api/users/{userId}`), role-set (`POST /api/users/{userId}/role`), and delete
-  (`DELETE /api/users/{userId}`) exist on the backend but are not yet consumed by the frontend —
-  see [known-issues-and-roadmap.md](known-issues-and-roadmap.md).
+- `PUT /api/users/{userId}` → `{Email}` → `{id, email}`. Requires `users:update`. Consumed by
+  `updateUserEmail()` from `UserLookup`'s email panel.
+- `POST /api/users/{userId}/role` → `{NewRole}` → 204. Requires `users:update`; invalidates the
+  target user's refresh tokens. Consumed by `setUserRole()`. The UI refuses this action when the
+  target is the signed-in admin's own account (`UserLookup`'s `isSelf` check).
+- `DELETE /api/users/{userId}` → 204. Requires `users:delete`. Consumed by `deleteUser()`. Also
+  refused by the UI when the target is the signed-in admin's own account.
 
 All list endpoints paginate with `?offset=0&limit=10` and return `Paged<T>`:
 `{ items: T[], total: number, offset: number, limit: number }`.
