@@ -1,11 +1,7 @@
 ﻿import axios, { AxiosInstance } from 'axios';
+import { getAccessToken } from './session';
 
 let api: AxiosInstance;
-
-function getToken() {
-  // Expect token to be stored in localStorage under 'token'
-  return localStorage.getItem('token') || '';
-}
 
 export function getApi(): AxiosInstance {
   if (!api) {
@@ -14,17 +10,12 @@ export function getApi(): AxiosInstance {
       headers: { 'Content-Type': 'application/json' },
     });
     api.interceptors.request.use((config) => {
-      const token = getToken();
+      const token = getAccessToken();
       if (token) {
-        config.headers = config.headers ?? {};
-        (config.headers as any).Authorization = `Bearer ${token}`;
+        config.headers.set('Authorization', `Bearer ${token}`);
       }
       return config;
     });
   }
   return api;
-}
-
-export function setToken(token: string) {
-  localStorage.setItem('token', token);
 }

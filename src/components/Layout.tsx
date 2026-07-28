@@ -1,8 +1,7 @@
-﻿import React, { PropsWithChildren } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+﻿import React from 'react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
-const Layout: React.FC<PropsWithChildren> = ({ children }) => {
-
+const Layout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
@@ -20,20 +19,11 @@ const Layout: React.FC<PropsWithChildren> = ({ children }) => {
             <NavLink to="/senders" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>Senders</NavLink>
             <NavLink to="/invoices/new" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>New Invoice</NavLink>
           </nav>
-          {/*<div className="flex items-center gap-2">*/}
-          {/*  <input*/}
-          {/*    value={token}*/}
-          {/*    onChange={(e) => setToken(e.target.value)}*/}
-          {/*    placeholder="Bearer token"*/}
-          {/*    className="hidden md:block w-64 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"*/}
-          {/*  />*/}
-          {/*  <button onClick={saveToken} className="hidden md:inline-flex px-3 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Save Token</button>*/}
-          {/*</div>*/}
         </div>
       </header>
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">{children}</main>
-      </div>
-    );
-  };
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6"><Outlet /></main>
+    </div>
+  );
+};
 
 export default Layout;

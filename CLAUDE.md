@@ -33,13 +33,13 @@ To add a new entity, replicate all three layers plus `src/types/<entity>.ts` and
 
 ### Axios setup (two places, order matters)
 
-`src/main.tsx` sets `axios.defaults.baseURL = import.meta.env.VITE_API_URL` and, when `VITE_API_GATE_KEY` is set, a default `X-Api-Gate` header. `src/lib/api.ts` then lazily creates a singleton instance (`getApi()`) that copies those defaults and adds a request interceptor injecting `Authorization: Bearer <token>` from `localStorage.getItem('token')`. Services must go through `getApi()`, not raw axios.
+`src/main.tsx` sets `axios.defaults.baseURL = import.meta.env.VITE_API_URL` and, when `VITE_API_GATE_KEY` is set, a default `X-Api-Gate` header. `src/lib/api.ts` then lazily creates a singleton instance (`getApi()`) that copies those defaults and adds a request interceptor injecting `Authorization: Bearer <token>` from `src/lib/session.ts` (`getAccessToken()`). Services must go through `getApi()`, not raw axios.
 
 ### Auth / gating (three separate mechanisms)
 
 1. **Frontend edge gate** — `functions/_middleware.js` is a Cloudflare Pages Function enforcing HTTP Basic Auth on every request to the deployed frontend. Credential comes from the Pages project env (`GATE_USER` / `GATE_PASSWORD`), never committed. Fails closed if unconfigured. Unit-tested in `test/gate.test.js`.
 2. **Backend edge gate (interim)** — deployed builds bake `VITE_API_GATE_KEY` into the bundle; every API request carries it as `X-Api-Gate` so the gated backend admits it. Unset locally (no-op). Scheduled for removal once JWT enforcement replaces it.
-3. **JWT Bearer token** — read from localStorage by the interceptor. There is currently no login UI or refresh flow; the frontend just stores and sends it.
+3. **JWT Bearer token** — obtained from `/login` (`src/pages/auth/LoginPage.tsx` → `POST /api/users/login`) and held by `src/lib/session.ts` (`localStorage` keys `mvr.accessToken` / `mvr.refreshToken`), a plain module outside React so the axios interceptor can read it synchronously. `src/store/authStore.ts` (Zustand) wraps it for components. Every route except `/login` is gated by `src/components/RequireAuth.tsx`. Silent renewal via `/api/users/refresh` is not yet implemented — an expired access token currently reaches the backend as-is.
 
 ## Deployment
 

@@ -10,8 +10,12 @@
 - **Fallback**: uses `invoice-<id>.pdf` if header parsing fails.
 
 ### Token management
-- JWT stored in localStorage under `token`; no login UI or refresh-token mechanism exists.
-- **Assumption**: the backend handles token validity; the frontend just stores & sends it.
+- JWT obtained via `/login` (`src/pages/auth/LoginPage.tsx`) and held by `src/lib/session.ts`
+  under `localStorage` keys `mvr.accessToken` / `mvr.refreshToken`. Every route except `/login` is
+  gated by `src/components/RequireAuth.tsx`.
+- **Not yet implemented**: silent renewal via `POST /api/users/refresh`. An expired access token
+  currently reaches the backend as-is instead of being renewed first (see spec
+  [login-and-user-management.md](../specs/login-and-user-management.md), requirement 10).
 
 ### Interim backend edge gate
 - `VITE_API_GATE_KEY` is baked into the deployed bundle and sent as `X-Api-Gate` on every

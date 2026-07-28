@@ -16,10 +16,17 @@ The frontend integrates with the **invoices-back** backend API.
 
 | Header | Source | Purpose |
 |--------|--------|---------|
-| `Authorization: Bearer <token>` | `localStorage.getItem('token')`, injected by the interceptor in `src/lib/api.ts` | JWT user auth |
+| `Authorization: Bearer <token>` | `src/lib/session.ts` (`localStorage` key `mvr.accessToken`), injected by the interceptor in `src/lib/api.ts` | JWT user auth |
 | `X-Api-Gate: <key>` | `VITE_API_GATE_KEY` build-time env, set as an axios default in `src/main.tsx` | Interim shared edge-gate credential for the deployed backend; unset (no-op) locally |
 
 ## Endpoints
+
+### Users
+- `POST /api/users/login` → `{Email, Password}` → `{token, refreshToken}`. Anonymous. Wrong
+  credentials: 400/404. Consumed by `src/services/users.ts` (`login()`) from `LoginPage`.
+- Refresh (`POST /api/users/refresh`), register, get/update/delete, and role-set endpoints exist on
+  the backend but are not yet consumed by the frontend — see
+  [known-issues-and-roadmap.md](known-issues-and-roadmap.md).
 
 All list endpoints paginate with `?offset=0&limit=10` and return `Paged<T>`:
 `{ items: T[], total: number, offset: number, limit: number }`.
