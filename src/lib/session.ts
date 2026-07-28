@@ -1,5 +1,6 @@
 import { decodeJwtPayload } from './jwt.js';
-import type { Identity, Role } from '../types/user';
+import { isRole } from '../types/user';
+import type { Identity } from '../types/user';
 
 const ACCESS_TOKEN_KEY = 'mvr.accessToken';
 const REFRESH_TOKEN_KEY = 'mvr.refreshToken';
@@ -22,10 +23,6 @@ export function getAccessToken(): string | null {
 
 export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-function isRole(value: unknown): value is Role {
-  return value === 'Admin' || value === 'Manager';
 }
 
 export function getIdentity(): Identity | null {

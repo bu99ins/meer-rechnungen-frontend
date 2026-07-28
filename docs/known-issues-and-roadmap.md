@@ -23,6 +23,16 @@
   (`src/lib/session.ts`'s `SessionEndedReason`) so the login screen can show "Your session ended…"
   distinctly from a rejected-credentials message.
 
+### User management (Admin only)
+- `src/pages/users/` (`UsersHome`, `UserCreate`, `UserLookup`), gated by
+  `src/components/RequireAdmin.tsx` (checks `identity.role === 'Admin'`; the Users nav entry in
+  `Layout.tsx` is hidden the same way).
+- No list-users endpoint exists on the backend, so there is no user table — only create (by email
+  + password + role) and look-up-by-pasted-ID. `GET /api/users/{id}` returns no role, so the
+  look-up screen states that plainly rather than guessing.
+- Update-email, role-set, and delete are not yet wired up (next increment); no password-change
+  endpoint exists on the backend at all yet (see the frontend spec's "Backend dependency" section).
+
 ### Interim backend edge gate
 - `VITE_API_GATE_KEY` is baked into the deployed bundle and sent as `X-Api-Gate` on every
   request. Accepted interim weakness: the key ends up in the built JS, which is itself only

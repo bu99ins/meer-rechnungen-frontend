@@ -24,9 +24,19 @@ The frontend integrates with the **invoices-back** backend API.
 ### Users
 - `POST /api/users/login` → `{Email, Password}` → `{token, refreshToken}`. Anonymous. Wrong
   credentials: 400/404. Consumed by `src/services/users.ts` (`login()`) from `LoginPage`.
-- Refresh (`POST /api/users/refresh`), register, get/update/delete, and role-set endpoints exist on
-  the backend but are not yet consumed by the frontend — see
+- `POST /api/users/refresh` → `{Token, RefreshToken}` → `{token, refreshToken}`. Anonymous, but
+  needs the (possibly expired) old access token alongside the refresh token. Called only by the
+  response interceptor in `src/lib/api.ts` on a 401 — see
   [known-issues-and-roadmap.md](known-issues-and-roadmap.md).
+- `POST /api/users/register` → `{Email, Password, Role}` → 201 `{id, email}`. Anonymous (the
+  backend does not gate this). Consumed by `src/services/users.ts` (`register()`) from
+  `UserCreate`, Admin-only in the UI via `RequireAdmin`. `Role` is restricted client-side to
+  `Admin`/`Manager` (`src/types/user.ts`'s `ROLES`).
+- `GET /api/users/{userId}` → `{id, email}` (no role). Requires `users:read`. Consumed by
+  `getUserById()` from `UserLookup`.
+- Update (`PUT /api/users/{userId}`), role-set (`POST /api/users/{userId}/role`), and delete
+  (`DELETE /api/users/{userId}`) exist on the backend but are not yet consumed by the frontend —
+  see [known-issues-and-roadmap.md](known-issues-and-roadmap.md).
 
 All list endpoints paginate with `?offset=0&limit=10` and return `Paged<T>`:
 `{ items: T[], total: number, offset: number, limit: number }`.
