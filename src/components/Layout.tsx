@@ -30,7 +30,7 @@ const Layout: React.FC = () => {
           <div className="flex items-center gap-3">
             {identity && <span className="text-sm text-gray-600 truncate max-w-[10rem] sm:max-w-[14rem]">{identity.email}</span>}
             <button
-              onClick={logout}
+              onClick={() => logout()}
               className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Sign out

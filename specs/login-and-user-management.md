@@ -9,13 +9,14 @@ produces one, no screen shows who you are, and there is no way to end a session.
 change the app opens on a login screen, exchanges credentials for a session that survives
 browser restarts and renews itself silently for as long as the backend allows, shows the
 signed-in identity with a way to sign out, and — for Admins only — offers screens to register a
-new user and to look up, re-role, re-password, or delete an existing one. Because accounts can
-only be created by an Admin, an Admin must also be able to set a password for an existing
-account; that capability depends on a backend endpoint that does not exist yet and is specified
-as a dependency below. Elsewhere the user-management screens are deliberately shaped around what
-the backend offers **today** (no user listing, no role in the read response) rather than around
-what a complete admin console would look like; where the API cannot support the obvious design,
-the UI must be explicit about the limitation instead of hiding it.
+new user and to look up (by ID or by email), re-role, re-password, or delete an existing one.
+Because accounts can only be created by an Admin, an Admin must also be able to set a password
+for an existing account; this originally depended on a backend endpoint that did not exist,
+tracked in [Backend dependency, resolved](#backend-dependency-resolved) — the endpoint has since
+shipped exactly as assumed there. Elsewhere the user-management screens are deliberately shaped around
+what the backend offers **today** (no bulk user listing) rather than around what a complete admin
+console would look like; where the API cannot support the obvious design, the UI must be explicit
+about the limitation instead of hiding it.
 
 ## Requirements
 
@@ -66,31 +67,37 @@ the UI must be explicit about the limitation instead of hiding it.
 
 15. The user-management area is reachable only by a person whose role is `Admin`. For any other
     role it is absent from the navigation **and** does not render on direct URL entry.
-16. The area's landing screen offers two things and no user table: an action to create a user, and
-    an input that looks a user up by an ID pasted in by the operator.
+16. The area's landing screen offers three things and no user table: an action to create a user,
+    an input that looks a user up by an ID pasted in by the operator, and an input that looks a
+    user up by email (requirement 30).
 17. Creating a user takes an email, a password, and a role, and submits them to
     `POST /api/users/register`. On success the new user's ID is displayed and can be copied out of
     the screen.
 18. Role is chosen from a fixed set of exactly `Admin` and `Manager` wherever a role is set. A role
     outside that set cannot be submitted from the UI.
-19. Looking a user up by ID calls `GET /api/users/{userId}` and shows the id and email returned.
-    The screen states that the API does not return the user's current role, so the currently
-    assigned role is unknown to the UI.
+19. Looking a user up by ID calls `GET /api/users/{userId}` and shows the id, email, and role
+    returned (the role may be absent if the account has none assigned).
 20. From a looked-up user, an Admin can change the email (`PUT /api/users/{userId}`), set the role
     (`POST /api/users/{userId}/role`), and delete the account (`DELETE /api/users/{userId}`).
     Deletion requires an explicit confirmation.
 21. The signed-in Admin's own account cannot be the target of a role change or a deletion. The UI
     refuses the action and explains that it would lock them out.
+30. The landing screen also offers a second lookup path: entering an email resolves it to a user
+    id via `GET /api/users?email={email}` and opens the same look-up screen requirement 19
+    describes. An email that matches no account produces the same visible not-found handling as
+    an unmatched ID (requirement 28), on the landing screen itself — no navigation to a dead
+    look-up page.
 
 ### Password management
 
 22. From the same screen that edits a looked-up user, an Admin can set a new password for that
     user **without** supplying the user's existing password. This is the only way a password can
     ever be changed after an account is created.
-23. Requirement 22 depends on a backend endpoint that does not exist today (see
-    [Backend dependency](#backend-dependency)). Until that endpoint exists, the UI must not show a
-    password field that cannot work: this requirement ships when the endpoint does, and the rest
-    of this spec is deliverable and verifiable without it.
+23. Requirement 22 is satisfied via `POST /api/users/{userId}/password` with body
+    `{NewPassword}`, requiring the same `users:update` permission as the other administrative
+    edits (see [Backend dependency, resolved](#backend-dependency-resolved)). This endpoint did
+    not exist when this spec was first written; the dependency has since been delivered exactly
+    as assumed.
 24. Setting a password requires the new value to be entered twice and to match before it can be
     submitted.
 25. The screen states the password rules the backend enforces — at least 8 characters, with an
@@ -112,25 +119,25 @@ the UI must be explicit about the limitation instead of hiding it.
     handling, and PDF/document download behaviour. The only change to them is that they are now
     behind the gate.
 
-## Backend dependency
+## Backend dependency, resolved
 
-Requirement 22 cannot be satisfied by this repository alone. Verified against the source: the
-Users module exposes password handling only in `LoginUser` and `RegisterUser`;
-`UpdateUserRequest` is `{Email, Role?}` and `UpdateUserHandler` writes only `Email`, `UserName`,
-and role. There is no change-password, reset-password, or admin-set-password endpoint.
+This section originally blocked requirement 22 and is kept for history: at the time this spec was
+written, the Users module exposed password handling only in `LoginUser` and `RegisterUser`;
+`UpdateUserRequest` was `{Email, Role?}` and `UpdateUserHandler` wrote only `Email`, `UserName`,
+and role. There was no change-password, reset-password, or admin-set-password endpoint.
 
-What the frontend needs from the backend, stated as a contract rather than a design:
+The contract asked for was: an authenticated endpoint that, given a user id and a new password,
+sets that user's password without requiring the user's current password; authorized by
+`users:update`, the same permission as the other administrative user edits; password-policy
+failures returned in the same problem shape as the module's other validation failures.
 
-- An authenticated endpoint that, given a user id and a new password, sets that user's password
-  without requiring the user's current password.
-- Authorized by the same permission that governs the other administrative user edits
-  (`users:update`), so an Admin who can change a role can also set a password.
-- Password-policy failures returned in the same problem shape as the module's other validation
-  failures, so the UI can surface them under requirement 25.
-
-The assumed shape is `POST /api/users/{userId}/password` with body `{NewPassword}`, mirroring the
-existing `POST /api/users/{userId}/role`. If the backend adopts a different route or body, this
-spec must be updated to match before the frontend work is planned.
+**Delivered as assumed.** `POST /api/users/{userId}/password` with body `{NewPassword}`, requiring
+`users:update`, mirrors `POST /api/users/{userId}/role`. Verified live: a rejected password (e.g.
+too short, missing a required character class) returns `400` with an `errors` map whose messages
+name the specific rules violated, exactly matching requirement 25's needs. A successful reset also
+invalidates the target user's outstanding refresh tokens (same revocation path as a role change),
+which is why requirement 26 matters — this is the only way a password is ever changed after
+account creation, and it always ends the target's existing sessions.
 
 ## Acceptance Criteria
 
@@ -162,13 +169,14 @@ seeding provides `admin@test.com` (Admin) and `manager@test.com` (Manager), both
     the login screen, and the browser Back button afterwards shows no application data. — R13, R14
 12. Signed in as `manager@test.com`: no user-management entry appears in the navigation, and
     entering the user-management URL directly does not render those screens. — R15
-13. Signed in as `admin@test.com`: the user-management landing screen shows a create action and a
-    look-up-by-ID input, and no table or list of users. — R16
+13. Signed in as `admin@test.com`: the user-management landing screen shows a create action, a
+    look-up-by-ID input, and a look-up-by-email input, and no table or list of users. — R16
 14. Creating a user with a fresh email, a password, and role `Manager` succeeds and displays the
     new user's ID; pasting that ID into the look-up input returns the same email. — R17, R19
 15. Every place a role is set offers exactly `Admin` and `Manager` and no way to submit any other
     value. — R18
-16. The look-up result screen states that the user's current role is not available from the API. — R19
+16. The look-up result screen shows the user's current role (or its absence) as returned by the
+    API. — R19
 17. For a looked-up user other than oneself: changing the email is reflected on a fresh look-up;
     setting the role reports success; deleting asks for confirmation first, and looking the ID up
     afterwards reports that the user was not found. — R20
@@ -180,10 +188,12 @@ seeding provides `admin@test.com` (Admin) and `manager@test.com` (Manager), both
     download all behave as before, once signed in. — R29
 21. `npm run build` succeeds (this is the deploy gate) and `npm test` still passes. — repo constraint
 
-### Blocked until the backend dependency lands
+### Password management
 
-These cannot be executed until the endpoint in [Backend dependency](#backend-dependency) exists.
-Until then, criterion 25 is what holds.
+These were blocked pending the endpoint in
+[Backend dependency, resolved](#backend-dependency-resolved); it has since shipped, so all of the
+below are now executable (criterion 25 below is retained as a historical record — it held only
+while the endpoint didn't exist, and is superseded by 22–24 and 26).
 
 22. For a user created earlier in these checks, an Admin sets a new password from the user's edit
     screen without entering the old one; signing out and signing in as that user with the new
@@ -191,10 +201,18 @@ Until then, criterion 25 is what holds.
 23. Entering two different values in the new-password fields prevents submission. — R24
 24. Submitting a password that violates the backend policy (e.g. `alllowercase`) shows a message
     on the screen naming what is wrong, and the password is unchanged. — R25
-25. Until the endpoint exists, no screen presents a password field for an existing account —
-    there is no control that appears functional and silently does nothing. — R23
+25. **Superseded.** Originally: "until the endpoint exists, no screen presents a password field for
+    an existing account." The endpoint now exists (R23's current wording states its contract; this
+    criterion described the interim state before it existed); a password panel is present and
+    functional (criteria 22–24, 26).
 26. An Admin can set their own password from their own user record, and afterwards signs in with
     it. — R26
+
+### Email look-up
+
+27. Typing a known email into the email-lookup input on the Users landing screen opens the same
+    look-up screen pasting that user's ID would, showing the same id, email, and role. An unknown
+    email produces a visible not-found message on the landing screen without navigating away. — R30
 
 ## Implementation notes
 
@@ -227,10 +245,13 @@ Constraints on the solution, not steps toward it.
 These are facts about the current backend that shape this spec. None of them is fixed by this
 change, and none should be worked around by inventing frontend behaviour the API cannot back.
 
-- `GET /api/users` does not exist — there is no way to enumerate users. Hence requirement 16.
-- `GET /api/users/{userId}` returns `{Id, Email}` only, with no role. Hence requirement 19.
-- No password endpoint of any kind exists beyond login and register. Hence requirements 22–23 and
-  the [Backend dependency](#backend-dependency) section.
+- There is still no bulk-listing endpoint — `GET /api/users?email=` resolves exactly one email to
+  exactly one id (`{Id}`, 404 if no match); it is not a search or paging endpoint. Hence
+  requirement 16 still holds no user table even with two look-up paths.
+- ~~`GET /api/users/{userId}` returns `{Id, Email}` only, with no role.~~ Resolved: it now returns
+  `{Id, Email, Role}` (role nullable). Requirement 19 updated accordingly.
+- ~~No password endpoint of any kind exists beyond login and register.~~ Resolved: see
+  [Backend dependency, resolved](#backend-dependency-resolved).
 - `POST /api/users/register` is **anonymous and accepts a `Role`**, so anyone who can reach the
   backend can create themselves an Admin account. Requirement 7 keeps the frontend from
   advertising this, but does not close it.

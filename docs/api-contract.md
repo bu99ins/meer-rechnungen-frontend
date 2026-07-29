@@ -28,19 +28,28 @@ The frontend integrates with the **invoices-back** backend API.
   needs the (possibly expired) old access token alongside the refresh token. Called only by the
   response interceptor in `src/lib/api.ts` on a 401 — see
   [known-issues-and-roadmap.md](known-issues-and-roadmap.md).
-- `POST /api/users/register` → `{Email, Password, Role}` → 201 `{id, email}`. Anonymous (the
-  backend does not gate this). Consumed by `src/services/users.ts` (`register()`) from
+- `POST /api/users/register` → `{Email, Password, Role}` → 201 `{id, email}` (no role). Anonymous
+  (the backend does not gate this). Consumed by `src/services/users.ts` (`register()`) from
   `UserCreate`, Admin-only in the UI via `RequireAdmin`. `Role` is restricted client-side to
   `Admin`/`Manager` (`src/types/user.ts`'s `ROLES`).
-- `GET /api/users/{userId}` → `{id, email}` (no role). Requires `users:read`. Consumed by
-  `getUserById()` from `UserLookup`.
-- `PUT /api/users/{userId}` → `{Email}` → `{id, email}`. Requires `users:update`. Consumed by
-  `updateUserEmail()` from `UserLookup`'s email panel.
+- `GET /api/users/{userId}` → `{id, email, role}` (`role` nullable — absent if no role assigned).
+  Requires `users:read`. Consumed by `getUserById()` from `UserLookup`.
+- `GET /api/users?email=` → `{id}` only, 404 if no match; single-record resolution, not a search
+  or list endpoint. Requires `users:read`. Consumed by `getUserIdByEmail()` from `UsersHome`'s
+  email-lookup form, which then navigates to `/users/{id}`.
+- `PUT /api/users/{userId}` → `{Email}` → `{id, email}` (no role). Requires `users:update`.
+  Consumed by `updateUserEmail()` from `UserLookup`'s email panel; the UI merges the response into
+  its existing user state rather than replacing it wholesale, so the already-known role isn't lost.
 - `POST /api/users/{userId}/role` → `{NewRole}` → 204. Requires `users:update`; invalidates the
   target user's refresh tokens. Consumed by `setUserRole()`. The UI refuses this action when the
   target is the signed-in admin's own account (`UserLookup`'s `isSelf` check).
 - `DELETE /api/users/{userId}` → 204. Requires `users:delete`. Consumed by `deleteUser()`. Also
   refused by the UI when the target is the signed-in admin's own account.
+- `POST /api/users/{userId}/password` → `{NewPassword}` → 204. Requires `users:update`;
+  invalidates the target user's refresh tokens (so a self-password-change ends the current
+  session — the UI signs out immediately with a distinct message rather than leaving a session
+  that will silently fail on its next renewal attempt). Consumed by `resetPassword()` from
+  `UserLookup`'s password panel, available for self and other users alike (unlike role/delete).
 
 All list endpoints paginate with `?offset=0&limit=10` and return `Paged<T>`:
 `{ items: T[], total: number, offset: number, limit: number }`.

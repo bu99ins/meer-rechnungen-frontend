@@ -21,7 +21,7 @@ type State = {
 
 type Actions = {
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: (reason?: SessionEndedReason) => void;
   clearError: () => void;
 };
 
@@ -46,8 +46,8 @@ export const useAuthStore = create<State & Actions>()(
       }
     },
 
-    logout: () => {
-      clearSession();
+    logout: (reason) => {
+      clearSession(reason);
     },
   }))
 );

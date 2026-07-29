@@ -17,7 +17,13 @@ export type LoginResponse = {
   refreshToken: string;
 };
 
+export type UserSummary = {
+  id: string;
+  email: string;
+};
+
 export type LookedUpUser = {
   id: string;
   email: string;
+  role: Role | null;
 };

@@ -36,7 +36,7 @@ export function getIdentity(): Identity | null {
   return { id, email, role };
 }
 
-export type SessionEndedReason = 'ended';
+export type SessionEndedReason = 'ended' | 'password-changed';
 
 let sessionEndedReason: SessionEndedReason | null = null;
 

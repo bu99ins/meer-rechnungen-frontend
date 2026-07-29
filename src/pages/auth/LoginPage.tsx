@@ -25,7 +25,13 @@ const LoginPage: React.FC = () => {
     await login(email, password);
   };
 
-  const message = error ?? (sessionEndedReason === 'ended' ? 'Your session ended. Please sign in again.' : undefined);
+  const sessionEndedMessage =
+    sessionEndedReason === 'ended'
+      ? 'Your session ended. Please sign in again.'
+      : sessionEndedReason === 'password-changed'
+        ? 'Your password was changed. Please sign in with the new password.'
+        : undefined;
+  const message = error ?? sessionEndedMessage;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
