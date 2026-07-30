@@ -1,7 +1,13 @@
-﻿import React, { PropsWithChildren } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React from 'react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
-const Layout: React.FC<PropsWithChildren> = ({ children }) => {
+const navClass = ({ isActive }: { isActive: boolean }) =>
+  `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`;
+
+const Layout: React.FC = () => {
+  const identity = useAuthStore((s) => s.identity);
+  const logout = useAuthStore((s) => s.logout);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -15,25 +21,26 @@ const Layout: React.FC<PropsWithChildren> = ({ children }) => {
             </div>
           </Link>
           <nav className="hidden sm:flex items-center gap-6">
-            <NavLink to="/invoices" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>Invoices</NavLink>
-            <NavLink to="/customers" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>Customers</NavLink>
-            <NavLink to="/senders" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>Senders</NavLink>
-            <NavLink to="/invoices/new" className={({ isActive }) => `text-sm ${isActive ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>New Invoice</NavLink>
+            <NavLink to="/invoices" className={navClass}>Invoices</NavLink>
+            <NavLink to="/customers" className={navClass}>Customers</NavLink>
+            <NavLink to="/senders" className={navClass}>Senders</NavLink>
+            <NavLink to="/invoices/new" className={navClass}>New Invoice</NavLink>
+            {identity?.role === 'Admin' && <NavLink to="/users" className={navClass}>Users</NavLink>}
           </nav>
-          {/*<div className="flex items-center gap-2">*/}
-          {/*  <input*/}
-          {/*    value={token}*/}
-          {/*    onChange={(e) => setToken(e.target.value)}*/}
-          {/*    placeholder="Bearer token"*/}
-          {/*    className="hidden md:block w-64 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"*/}
-          {/*  />*/}
-          {/*  <button onClick={saveToken} className="hidden md:inline-flex px-3 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Save Token</button>*/}
-          {/*</div>*/}
+          <div className="flex items-center gap-3">
+            {identity && <span className="text-sm text-gray-600 truncate max-w-[10rem] sm:max-w-[14rem]">{identity.email}</span>}
+            <button
+              onClick={() => logout()}
+              className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">{children}</main>
-      </div>
-    );
-  };
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6"><Outlet /></main>
+    </div>
+  );
+};
 
 export default Layout;

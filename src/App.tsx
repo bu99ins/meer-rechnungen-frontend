@@ -9,32 +9,47 @@ import CustomerForm from './pages/customers/CustomerForm';
 import SendersList from './pages/senders/SendersList';
 import SenderDetails from './pages/senders/SenderDetails';
 import SenderForm from './pages/senders/SenderForm';
+import UsersHome from './pages/users/UsersHome';
+import UserCreate from './pages/users/UserCreate';
+import UserLookup from './pages/users/UserLookup';
 import Layout from './components/Layout';
+import RequireAuth from './components/RequireAuth';
+import RequireAdmin from './components/RequireAdmin';
+import LoginPage from './pages/auth/LoginPage';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/invoices" replace />} />
-          {/* Invoices */}
-          <Route path="/invoices" element={<InvoicesList />} />
-          <Route path="/invoices/new" element={<InvoiceForm mode="create" />} />
-          <Route path="/invoices/:id" element={<InvoiceDetails />} />
-          <Route path="/invoices/:id/edit" element={<InvoiceForm mode="edit" />} />
-          {/* Customers */}
-          <Route path="/customers" element={<CustomersList />} />
-          <Route path="/customers/new" element={<CustomerForm mode="create" />} />
-          <Route path="/customers/:id" element={<CustomerDetails />} />
-          <Route path="/customers/:id/edit" element={<CustomerForm mode="edit" />} />
-          {/* Senders */}
-          <Route path="/senders" element={<SendersList />} />
-          <Route path="/senders/new" element={<SenderForm mode="create" />} />
-          <Route path="/senders/:id" element={<SenderDetails />} />
-          <Route path="/senders/:id/edit" element={<SenderForm mode="edit" />} />
-          <Route path="*" element={<Navigate to="/invoices" replace />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<RequireAuth />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/invoices" replace />} />
+            {/* Invoices */}
+            <Route path="/invoices" element={<InvoicesList />} />
+            <Route path="/invoices/new" element={<InvoiceForm mode="create" />} />
+            <Route path="/invoices/:id" element={<InvoiceDetails />} />
+            <Route path="/invoices/:id/edit" element={<InvoiceForm mode="edit" />} />
+            {/* Customers */}
+            <Route path="/customers" element={<CustomersList />} />
+            <Route path="/customers/new" element={<CustomerForm mode="create" />} />
+            <Route path="/customers/:id" element={<CustomerDetails />} />
+            <Route path="/customers/:id/edit" element={<CustomerForm mode="edit" />} />
+            {/* Senders */}
+            <Route path="/senders" element={<SendersList />} />
+            <Route path="/senders/new" element={<SenderForm mode="create" />} />
+            <Route path="/senders/:id" element={<SenderDetails />} />
+            <Route path="/senders/:id/edit" element={<SenderForm mode="edit" />} />
+            {/* Users (Admin only) */}
+            <Route element={<RequireAdmin />}>
+              <Route path="/users" element={<UsersHome />} />
+              <Route path="/users/new" element={<UserCreate />} />
+              <Route path="/users/:userId" element={<UserLookup />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/invoices" replace />} />
+          </Route>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 };
