@@ -19,10 +19,8 @@
 
 ```
 ├── src/                      # The React SPA (see below)
-├── functions/
-│   └── _middleware.js        # Cloudflare Pages Function: edge Basic-Auth gate
 ├── test/
-│   └── gate.test.js          # node:test unit tests for the edge gate
+│   └── *.test.js             # node:test unit tests (jwt, problem, refreshDecision)
 ├── deploy/
 │   └── verify-frontend-workflow.sh  # Static checks on the deploy workflow
 ├── .github/workflows/

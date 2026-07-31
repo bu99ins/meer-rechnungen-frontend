@@ -64,5 +64,5 @@ instead (see [api-contract.md](api-contract.md)).
 
 Deployment is a manually triggered GitHub Actions workflow
 ([.github/workflows/deploy-frontend.yml](../.github/workflows/deploy-frontend.yml)) that builds
-with the production env vars and publishes `dist/` + `functions/` to Cloudflare Pages. See
+with the production env vars and publishes `dist/` to Cloudflare Pages. See
 [CLAUDE.md](../CLAUDE.md#deployment) for the gating rules and required repo variables/secrets.

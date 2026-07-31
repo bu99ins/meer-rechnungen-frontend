@@ -1,5 +1,5 @@
 // Plain JS (not .ts) so it can be unit-tested directly with node:test, same pattern as
-// functions/_middleware.js + test/gate.test.js. See jwt.d.ts for the exported type.
+// src/lib/problem.js + test/problem.test.js. See jwt.d.ts for the exported type.
 
 function base64UrlDecode(segment) {
 	const padded = segment.replace(/-/g, '+').replace(/_/g, '/');

@@ -49,8 +49,8 @@ jobs:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: npm run build
 
-      # Deploy dist/ + the functions/ gate to Cloudflare Pages. The shared gate credential
-      # (GATE_USER / GATE_PASSWORD) lives in the Pages project's environment, not here.
+      # Deploy dist/ to Cloudflare Pages. No edge gate any more — access control is the
+      # application's own authentication (spec: retire-interim-gates-and-data-recovery).
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
