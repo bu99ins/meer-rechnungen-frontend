@@ -11,7 +11,7 @@ VITE_API_URL=http://localhost:5000
 
 The backend's CORS policy allows `http://localhost:5173`, so no Vite proxy is needed. For
 deployed builds, `VITE_API_URL` is supplied at build time (the deployed backend's HTTPS URL)
-instead, along with `VITE_API_GATE_KEY` (see [api-contract.md](api-contract.md)).
+instead (see [api-contract.md](api-contract.md)).
 
 ## Scripts
 
