@@ -17,7 +17,6 @@ The frontend integrates with the **invoices-back** backend API.
 | Header | Source | Purpose |
 |--------|--------|---------|
 | `Authorization: Bearer <token>` | `src/lib/session.ts` (`localStorage` key `mvr.accessToken`), injected by the interceptor in `src/lib/api.ts` | JWT user auth |
-| `X-Api-Gate: <key>` | `VITE_API_GATE_KEY` build-time env, set as an axios default in `src/main.tsx` | Interim shared edge-gate credential for the deployed backend; unset (no-op) locally |
 
 ## Endpoints
 

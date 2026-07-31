@@ -35,7 +35,7 @@
 
 ```
 src/
-├── main.tsx              # Entry point; axios defaults (VITE_API_URL, X-Api-Gate)
+├── main.tsx              # Entry point; axios defaults (VITE_API_URL)
 ├── App.tsx               # Root component; routing setup (BrowserRouter)
 ├── App.css               # Global styles
 ├── index.css             # Tailwind + global resets

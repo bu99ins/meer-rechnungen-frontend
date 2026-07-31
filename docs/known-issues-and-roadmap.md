@@ -40,11 +40,6 @@
   looked-up id matches the signed-in identity — but a self-password-change is allowed and signs
   the admin out immediately afterward (see above).
 
-### Interim backend edge gate
-- `VITE_API_GATE_KEY` is baked into the deployed bundle and sent as `X-Api-Gate` on every
-  request. Accepted interim weakness: the key ends up in the built JS, which is itself only
-  served behind the frontend's Basic-Auth gate. To be removed when JWT enforcement replaces it.
-
 ### Error boundaries
 - No React error boundary component; errors are caught at service/store level only.
 - **Risk**: unhandled promise rejections could fail silently.

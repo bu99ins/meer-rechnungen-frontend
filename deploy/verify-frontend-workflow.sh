@@ -81,6 +81,27 @@ else
 	bad "no concurrency guard — overlapping manual deploys can race"
 fi
 
+# The retired backend edge gate's header name and build/secret variable name must not appear in any
+# tracked non-doc file (spec: specs/retire-interim-gates-and-data-recovery.md, req 4 / AC 4). Built
+# from split literals at runtime, matching the backend's deploy/verify-edge-gate-retired.sh, so this
+# check does not itself fail the moment it is committed. This asserts only the settled half of AC 4 —
+# the header/variable-name clause, which will not change again. The front-door-middleware clause above
+# (":72-75") is the other half and is intentionally NOT covered here: it currently asserts the
+# middleware IS present, and a later increment retiring it will invert that check, not this one.
+GATE_HEADER="X-Api""-Gate"
+GATE_KEY_VAR="VITE_API_GATE""_KEY"
+
+grep_status=0
+git grep -qiIF -e "$GATE_KEY_VAR" -e "$GATE_HEADER" -- ':/' ':!/*.md' >/dev/null 2>&1 || grep_status=$?
+if [ "$grep_status" = "0" ]; then
+	bad "a tracked (non-doc) file still references the retired backend edge gate's header or variable name:"
+	git grep -niIF -e "$GATE_KEY_VAR" -e "$GATE_HEADER" -- ':/' ':!/*.md' >&2 || true
+elif [ "$grep_status" = "1" ]; then
+	ok "no tracked file (outside docs) references the retired backend edge gate's header or variable name"
+else
+	bad "the static scan could not run (git grep exited $grep_status) — treat as unverified, not clean"
+fi
+
 echo ""
 echo "passed: $pass  failed: $fail"
 [ "$fail" -eq 0 ]
