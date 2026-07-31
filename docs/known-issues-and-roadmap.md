@@ -51,8 +51,8 @@
 ## Recommendations / next steps
 
 1. **Add an error boundary** component to gracefully handle React errors
-2. **Expand unit tests** for services & stores (the `node --test` setup currently covers the edge
-   gate plus the pure logic in `src/lib/jwt.js`, `problem.js`, and `refreshDecision.js`)
+2. **Expand unit tests** for services & stores (the `node --test` setup currently covers the pure
+   logic in `src/lib/jwt.js`, `problem.js`, and `refreshDecision.js`)
 3. **Add E2E tests** (Playwright/Cypress) for workflows
 4. **Validate response schemas** (e.g., zod) at the service layer
 5. **Add loading skeletons** for better UX during data fetches

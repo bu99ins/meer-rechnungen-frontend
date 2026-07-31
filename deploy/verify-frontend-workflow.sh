@@ -5,6 +5,9 @@
 #   - the deploy gate is the build (tsc -b && vite build); it runs NO tests and NO standalone
 #     ESLint (req 10, AC 8) — a failing test/lint therefore cannot block a deploy
 #   - it builds with VITE_API_URL (the deployed backend URL) and deploys to Cloudflare Pages
+#   - neither retired interim gate (the backend edge gate, nor the front-door Basic-Auth gate) is
+#     present in any tracked non-doc file (spec: retire-interim-gates-and-data-recovery.md — lives in
+#     the backend repo, not this one's specs/ — req 3-4 / AC 2, 4)
 #
 # Usage: deploy/verify-frontend-workflow.sh
 set -euo pipefail
@@ -69,37 +72,69 @@ else
 	bad "no --project-name for the Pages deploy"
 fi
 
-if [ -d functions ] && ls functions/_middleware.* >/dev/null 2>&1; then
-	ok "edge gate present (functions/_middleware)"
-else
-	bad "no functions/_middleware gate found — the frontend would deploy ungated"
-fi
-
 if grep -qE '^concurrency:' "$WF"; then
 	ok "concurrency guard present (overlapping manual runs queue)"
 else
 	bad "no concurrency guard — overlapping manual deploys can race"
 fi
 
-# The retired backend edge gate's header name and build/secret variable name must not appear in any
-# tracked non-doc file (spec: specs/retire-interim-gates-and-data-recovery.md, req 4 / AC 4). Built
-# from split literals at runtime, matching the backend's deploy/verify-edge-gate-retired.sh, so this
-# check does not itself fail the moment it is committed. This asserts only the settled half of AC 4 —
-# the header/variable-name clause, which will not change again. The front-door-middleware clause above
-# (":72-75") is the other half and is intentionally NOT covered here: it currently asserts the
-# middleware IS present, and a later increment retiring it will invert that check, not this one.
-GATE_HEADER="X-Api""-Gate"
-GATE_KEY_VAR="VITE_API_GATE""_KEY"
+# Neither retired interim gate's header/variable names, nor the front-door gate's own mechanism
+# files, may appear in any tracked non-doc file (spec: retire-interim-gates-and-data-recovery.md,
+# req 4 / AC 4). Needles built from split literals at runtime, matching the backend's
+# deploy/verify-edge-gate-retired.sh, so this check does not itself fail the moment it is committed.
+# --cached reads the git INDEX, not the worktree — this and the tracked-file checks below must agree
+# on what "tracked" means, or a mid-edit run (content edited on disk, not yet staged) gives two
+# different, confusing answers about the same repo state. `git add` before running this script to
+# check what would actually be committed; that's the only state that matters once this ships.
+BACKEND_GATE_HEADER="X-Api""-Gate"
+BACKEND_GATE_KEY_VAR="VITE_API_GATE""_KEY"
+FRONT_DOOR_USER_VAR="GATE""_USER"
+FRONT_DOOR_PASS_VAR="GATE""_PASSWORD"
 
 grep_status=0
-git grep -qiIF -e "$GATE_KEY_VAR" -e "$GATE_HEADER" -- ':/' ':!/*.md' >/dev/null 2>&1 || grep_status=$?
+git grep -qiIF \
+	-e "$BACKEND_GATE_KEY_VAR" -e "$BACKEND_GATE_HEADER" \
+	-e "$FRONT_DOOR_USER_VAR" -e "$FRONT_DOOR_PASS_VAR" \
+	--cached -- ':/' ':!/*.md' >/dev/null 2>&1 || grep_status=$?
 if [ "$grep_status" = "0" ]; then
-	bad "a tracked (non-doc) file still references the retired backend edge gate's header or variable name:"
-	git grep -niIF -e "$GATE_KEY_VAR" -e "$GATE_HEADER" -- ':/' ':!/*.md' >&2 || true
+	bad "a tracked (non-doc) file still references a retired gate's header or variable name:"
+	git grep -niIF \
+		-e "$BACKEND_GATE_KEY_VAR" -e "$BACKEND_GATE_HEADER" \
+		-e "$FRONT_DOOR_USER_VAR" -e "$FRONT_DOOR_PASS_VAR" \
+		--cached -- ':/' ':!/*.md' >&2 || true
 elif [ "$grep_status" = "1" ]; then
-	ok "no tracked file (outside docs) references the retired backend edge gate's header or variable name"
+	ok "no tracked file (outside docs) references either retired gate's header or variable name"
 else
 	bad "the static scan could not run (git grep exited $grep_status) — treat as unverified, not clean"
+fi
+
+# `git ls-files` (not --error-unmatch) lists tracked paths under the pathspec with no output at all,
+# rather than a special exit code, when nothing matches — so "found nothing" and "genuine error" are
+# told apart by exit status while "found something" is told apart by non-empty output, and no case
+# collapses into another. The whole functions/ DIRECTORY is checked, not just the one filename it
+# used to contain: every file under functions/ is a Cloudflare Pages Function by Cloudflare's own
+# convention, so a re-introduction under a different name or extension (functions/_middleware.ts,
+# functions/[[path]].js, …) is exactly as much a re-introduction of the gate as the original filename
+# would be, and a filename-only check would miss it.
+ls_status=0
+functions_tracked="$(git ls-files -- functions/ 2>&1)" || ls_status=$?
+if [ "$ls_status" != "0" ]; then
+	bad "could not check whether functions/ is tracked (git ls-files exited $ls_status) — treat as unverified, not clean"
+elif [ -n "$functions_tracked" ]; then
+	bad "functions/ still contains tracked files (the front-door gate's mechanism) — AC 4 requires it gone:"
+	printf '%s\n' "$functions_tracked" | sed 's/^/    /' >&2
+else
+	ok "functions/ contains no tracked files (the front-door gate's mechanism is gone)"
+fi
+
+ls_status=0
+helper_tracked="$(git ls-files -- test/gate.test.js 2>&1)" || ls_status=$?
+if [ "$ls_status" != "0" ]; then
+	bad "could not check whether test/gate.test.js is tracked (git ls-files exited $ls_status) — treat as unverified, not clean"
+elif [ -n "$helper_tracked" ]; then
+	bad "test/gate.test.js (the front-door gate's own test helper) is still tracked — AC 4 requires it gone"
+else
+	ok "the front-door gate's test helper (test/gate.test.js) is no longer tracked"
 fi
 
 echo ""
