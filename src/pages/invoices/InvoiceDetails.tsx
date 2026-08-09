@@ -4,6 +4,7 @@ import { useInvoicesStore } from '../../store/invoicesStore';
 import Loading from '../../components/Loading';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { ArrowDownTrayIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
   <div className="grid grid-cols-12 py-2">
@@ -45,7 +46,7 @@ const InvoiceDetails: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h2 className="text-sm font-semibold text-gray-900 mb-3">Customer</h2>
-            <Row label="Company" value={current.customer.companyName} />
+            <Row label="Company" value={resolveCustomerDisplayName(current.customer)} />
             <Row label="Contact" value={current.customer.customerName} />
             <Row label="Email" value={current.customer.customerEmail} />
             <Row label="Address" value={current.customer.customerAddress} />

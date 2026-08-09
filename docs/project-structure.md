@@ -13,7 +13,7 @@
 | **UI/Styling** | Tailwind CSS | ^3.4.19 |
 | **Icons** | Heroicons | ^2.2.0 |
 | **Linting** | ESLint + typescript-eslint | ^9.39.4 / ^8.59.3 |
-| **Tests** | Node built-in test runner (`node --test`) | Node 22 in CI |
+| **Tests** | Node built-in test runner (`node --test`, plain-JS logic) + Vitest/jsdom/React Testing Library (`src/**/*.test.{ts,tsx}`, component tests) | Node 22 in CI |
 
 ## Repository layout
 
@@ -38,14 +38,16 @@ src/
 ├── App.css               # Global styles
 ├── index.css             # Tailwind + global resets
 ├── vite-env.d.ts         # Vite environment type definitions
+├── test-setup.ts         # Vitest setup (jest-dom matchers); loaded via vite.config.ts's test.setupFiles
 │
-├── components/           # Reusable UI components
+├── components/           # Reusable UI components (co-located *.test.tsx run under Vitest)
 │   ├── Layout.tsx        # Root layout wrapper (nav, sidebar, etc.)
 │   ├── Form.tsx          # Generic form component
 │   ├── Pagination.tsx    # Pagination control
 │   ├── ConfirmDialog.tsx # Delete/action confirmation modal
 │   ├── EmptyState.tsx    # "No data" placeholder
-│   └── Loading.tsx       # Loading spinner/skeleton
+│   ├── Loading.tsx       # Loading spinner/skeleton
+│   └── Loading.test.tsx  # Vitest + React Testing Library smoke test
 │
 ├── pages/                # Page-level components
 │   ├── InvoicesList.tsx  # (top-level) leftover duplicate — unused, not routed

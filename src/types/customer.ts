@@ -1,4 +1,6 @@
-﻿export type Customer = {
+export type CustomerType = 'Individual' | 'Business';
+
+export type Customer = {
   id?: string;
   companyName: string;
   customerName: string;
@@ -6,4 +8,5 @@
   postalCode: string;
   customerEmail: string;
   customerTaxVatId: string;
+  customerType: CustomerType;
 };

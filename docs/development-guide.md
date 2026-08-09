@@ -20,7 +20,8 @@ instead (see [api-contract.md](api-contract.md)).
 | `npm run dev` | Start Vite dev server (hot reload) |
 | `npm run build` | TypeScript check (`tsc -b`) + Vite production build |
 | `npm run lint` | ESLint check |
-| `npm test` | Run unit tests with Node's built-in runner (`node --test`) |
+| `npm test` | Run unit tests: Node's built-in runner (`node --test`, plain-JS logic files) followed by Vitest (`vitest run`, React component tests under `src/**/*.test.{ts,tsx}`) |
+| `npm run test:watch` | Vitest in watch mode (component tests only) |
 | `npm run preview` | Preview production build locally |
 
 ## Build output

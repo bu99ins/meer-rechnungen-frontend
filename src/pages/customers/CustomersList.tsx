@@ -6,6 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import Loading from '../../components/Loading';
 import EmptyState from '../../components/EmptyState';
 import { EyeIcon, PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 const CustomersList: React.FC = () => {
   const { list, total, offset, limit, loading, error, fetch, setPage, remove } = useCustomersStore();
@@ -50,7 +51,7 @@ const CustomersList: React.FC = () => {
             <tbody className="divide-y divide-gray-100 bg-white">
               {rows.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">{c.companyName}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">{resolveCustomerDisplayName(c)}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{c.customerName}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{c.customerEmail}</td>
                   <td className="px-4 py-3 text-sm text-right">
