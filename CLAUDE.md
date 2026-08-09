@@ -15,8 +15,9 @@ Detailed reference docs (API contract & data models, store shapes, workflows, kn
 | `npm run dev` | Vite dev server at http://localhost:5173 |
 | `npm run build` | `tsc -b && vite build` → `dist/` (this is also the only deploy gate in CI) |
 | `npm run lint` | ESLint |
-| `npm test` | `node --test` — runs `test/*.test.js` (Node's built-in runner, no Jest/Vitest) |
-| `node --test test/jwt.test.js` | Run a single test file |
+| `npm test` | `node --test` (plain-JS logic in `test/*.test.js`) then `vitest run` (React component tests under `src/**/*.test.{ts,tsx}`) |
+| `node --test test/jwt.test.js` | Run a single `node --test` file |
+| `npm run test:watch` | Vitest in watch mode (component tests only) |
 | `deploy/verify-frontend-workflow.sh` | Static check that the deploy workflow stays manual-only and test/lint-free (bash) |
 
 Local dev needs the backend running via docker-compose at `http://localhost:5000` (committed in `.env.development`). There is **no Vite proxy** — the app calls the backend cross-origin and relies on the backend's CORS policy allowing `http://localhost:5173`.

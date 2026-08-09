@@ -110,6 +110,7 @@ TypeScript sources: [src/types/](../src/types/).
     postalCode: string;
     customerEmail: string;
     customerTaxVatId: string;
+    customerType: 'Individual' | 'Business';
   };
   sender: {
     id: string;
@@ -161,8 +162,16 @@ TypeScript sources: [src/types/](../src/types/).
   postalCode: string;
   customerEmail: string;
   customerTaxVatId: string;
+  customerType: 'Individual' | 'Business';
 }
 ```
+`customerType` is `'Individual'` or `'Business'`. `companyName` and `customerTaxVatId` are required
+(must be present, `""` is fine) for both classifications — but are only meaningful for `Business`,
+where they are also non-blank. Create defaults `customerType` to `'Individual'` when omitted; Update
+requires it explicitly on every request (an omission fails validation rather than being applied) —
+the frontend must always send it, including on saves where the classification itself is unchanged.
+`GET /api/invoices` list items do not embed customer data at all, so `customerType` (like the rest
+of the customer shape) does not appear there.
 
 ### Sender
 ```typescript

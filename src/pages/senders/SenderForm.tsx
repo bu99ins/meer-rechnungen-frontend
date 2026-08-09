@@ -20,18 +20,28 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
 
   useEffect(() => {
     if (mode === 'edit' && id) {
-      store.fetchOne(id).then(() => {
-        const s = store.current;
-        if (s) {
-          setSenderCompanyName(s.senderCompanyName);
-          setSenderFullName(s.senderFullName);
-          setSenderAddress(s.senderAddress);
-          setSenderTaxVatId(s.senderTaxVatId);
-          setBankDetails(s.bankDetails);
-        }
-      });
+      store.fetchOne(id);
     }
-  }, [mode, id]);
+    // store.fetchOne, not the whole `store` object: Zustand's create() defines action functions
+    // once and set() only ever replaces state properties, so fetchOne's reference is stable across
+    // renders — safe to depend on without refetching every time an unrelated store field changes.
+  }, [mode, id, store.fetchOne]);
+
+  // Populates local form state once the fetch above actually lands. This is a SEPARATE effect,
+  // reactive on store.current itself, rather than reading store.current from inside the fetch's
+  // .then() callback: Zustand's set() replaces the whole state object rather than mutating it, so
+  // a callback that closes over the `store` captured at mount time would keep reading that
+  // mount-time snapshot (current: undefined) forever, never the value the fetch just loaded.
+  useEffect(() => {
+    if (mode === 'edit' && store.current) {
+      const s = store.current;
+      setSenderCompanyName(s.senderCompanyName);
+      setSenderFullName(s.senderFullName);
+      setSenderAddress(s.senderAddress);
+      setSenderTaxVatId(s.senderTaxVatId);
+      setBankDetails(s.bankDetails);
+    }
+  }, [mode, store.current]);
 
   const canSave = senderCompanyName && senderFullName;
 
@@ -53,7 +63,11 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
     }
   };
 
-  if (mode === 'edit' && store.loading && !store.current) {
+  // Guards on identity, not just presence: navigating from editing one sender straight to
+  // another (same mounted component, id param changes) would otherwise leave the previous
+  // sender's data on screen — fully interactive and savable onto the new id — until the new
+  // fetch resolves.
+  if (mode === 'edit' && (!store.current || store.current.id !== id)) {
     return <Loading label="Loading sender..." />;
   }
 

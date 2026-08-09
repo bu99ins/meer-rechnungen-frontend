@@ -7,6 +7,7 @@ import { NumberInput, SelectInput, TextArea, TextInput } from '../../components/
 import Loading from '../../components/Loading';
 import type { LineItem, InvoiceUpsert } from '../../types/invoice';
 import { dateInputToIso, isoToDateInput, toNumber } from '../../utils/format';
+import { hasCompanyName, resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 type Props = { mode: 'create' | 'edit' };
 
@@ -41,22 +42,34 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
 
   useEffect(() => {
     if (mode === 'edit' && id) {
-      invoices.fetchOne(id).then(() => {
-        const cur = invoices.current;
-        if (cur) {
-          setInvoiceNumber(cur.invoiceNumber);
-          setInvoiceDate(isoToDateInput(cur.invoiceDate));
-          setDueDate(isoToDateInput(cur.dueDate));
-          setCurrency(cur.currency);
-          setNotes(cur.notes || '');
-          setCustomerId(cur.customer.id);
-          setSenderId(cur.sender.id);
-          setTaxRatePct(cur.taxRate * 100);
-          setLineItems(cur.lineItems.map(li => ({ id: li.id, itemName: li.itemName, quantity: li.quantity, unitPrice: li.unitPrice, total: li.total })));
-        }
-      });
+      invoices.fetchOne(id);
     }
-  }, [mode, id]);
+    // invoices.fetchOne, not the whole `invoices` object: Zustand's create() defines action
+    // functions once and set() only ever replaces state properties, so fetchOne's reference is
+    // stable across renders — safe to depend on without refetching every time an unrelated store
+    // field changes.
+  }, [mode, id, invoices.fetchOne]);
+
+  // Populates local form state once the fetch above actually lands. This is a SEPARATE effect,
+  // reactive on invoices.current itself, rather than reading invoices.current from inside the
+  // fetch's .then() callback: Zustand's set() replaces the whole state object rather than
+  // mutating it, so a callback that closes over the `invoices` store captured at mount time would
+  // keep reading that mount-time snapshot (current: undefined) forever, never the value the fetch
+  // just loaded.
+  useEffect(() => {
+    if (mode === 'edit' && invoices.current) {
+      const cur = invoices.current;
+      setInvoiceNumber(cur.invoiceNumber);
+      setInvoiceDate(isoToDateInput(cur.invoiceDate));
+      setDueDate(isoToDateInput(cur.dueDate));
+      setCurrency(cur.currency);
+      setNotes(cur.notes || '');
+      setCustomerId(cur.customer.id);
+      setSenderId(cur.sender.id);
+      setTaxRatePct(cur.taxRate * 100);
+      setLineItems(cur.lineItems.map(li => ({ id: li.id, itemName: li.itemName, quantity: li.quantity, unitPrice: li.unitPrice, total: li.total })));
+    }
+  }, [mode, invoices.current]);
 
   const subtotal = useMemo(() => lineItems.reduce((sum, li) => sum + (toNumber(li.total) || (toNumber(li.quantity) * toNumber(li.unitPrice))), 0), [lineItems]);
   const taxRate = (taxRatePct || 0) / 100;
@@ -109,7 +122,11 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
     }
   };
 
-  if (mode === 'edit' && invoices.loading && !invoices.current) {
+  // Guards on identity, not just presence: navigating from editing one invoice straight to
+  // another (same mounted component, id param changes) would otherwise leave the previous
+  // invoice's data on screen — fully interactive and savable onto the new id — until the new
+  // fetch resolves.
+  if (mode === 'edit' && (!invoices.current || invoices.current.id !== id)) {
     return <Loading label="Loading invoice..." />;
   }
 
@@ -139,7 +156,11 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
               <SelectInput id="customerId" label="Customer" value={customerId} onChange={(e) => setCustomerId(e.target.value)} required>
                 <option value="">Select customer...</option>
                 {customers.list.map(c => (
-                  <option key={c.id} value={c.id}>{c.companyName} — {c.customerName}</option>
+                  <option key={c.id} value={c.id}>
+                    {hasCompanyName(c.companyName)
+                      ? `${resolveCustomerDisplayName(c)} — ${c.customerName}`
+                      : resolveCustomerDisplayName(c)}
+                  </option>
                 ))}
               </SelectInput>
               <SelectInput id="senderId" label="Sender" value={senderId} onChange={(e) => setSenderId(e.target.value)} required>

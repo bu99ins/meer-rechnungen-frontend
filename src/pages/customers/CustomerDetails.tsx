@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import { useCustomersStore } from '../../store/customersStore';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
   <div className="grid grid-cols-12 py-2">
@@ -23,7 +24,7 @@ const CustomerDetails: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{current.companyName}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{resolveCustomerDisplayName(current)}</h1>
           <p className="text-sm text-gray-600">Contact: {current.customerName}</p>
         </div>
         <Link to={`/customers/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">
