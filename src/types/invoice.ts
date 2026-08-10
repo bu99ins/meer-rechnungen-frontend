@@ -10,8 +10,8 @@
 export type InvoiceListItem = {
   id: string;
   invoiceNumber: string;
-  invoiceDate: string; // ISO
-  dueDate: string; // ISO
+  invoiceDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   totalAmount: number;
 };
@@ -39,8 +39,8 @@ export type SenderRef = {
 export type InvoiceDetail = {
   id: string;
   invoiceNumber: string;
-  invoiceDate: string;
-  dueDate: string;
+  invoiceDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   notes?: string;
   customer: CustomerRef;
@@ -54,8 +54,8 @@ export type InvoiceDetail = {
 // Create/Update payloads expect ids for customer and sender
 export type InvoiceUpsert = {
   invoiceNumber: string;
-  invoiceDate: string;
-  dueDate: string;
+  invoiceDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   notes?: string;
   customerId: string;

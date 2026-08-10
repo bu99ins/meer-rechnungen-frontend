@@ -6,7 +6,7 @@ import { useSendersStore } from '../../store/sendersStore';
 import { NumberInput, SelectInput, TextArea, TextInput } from '../../components/Form';
 import Loading from '../../components/Loading';
 import type { LineItem, InvoiceUpsert } from '../../types/invoice';
-import { dateInputToIso, isoToDateInput, toNumber } from '../../utils/format';
+import { toNumber } from '../../utils/format';
 import { hasCompanyName, resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 type Props = { mode: 'create' | 'edit' };
@@ -60,8 +60,11 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
     if (mode === 'edit' && invoices.current) {
       const cur = invoices.current;
       setInvoiceNumber(cur.invoiceNumber);
-      setInvoiceDate(isoToDateInput(cur.invoiceDate));
-      setDueDate(isoToDateInput(cur.dueDate));
+      // cur.invoiceDate/dueDate are already "yyyy-MM-dd" — the same shape <input type="date">
+      // reads and writes, so no conversion is needed (or safe: see format.ts's formatDate comment
+      // for why routing a bare date string through `new Date()` would reintroduce timezone drift).
+      setInvoiceDate(cur.invoiceDate);
+      setDueDate(cur.dueDate);
       setCurrency(cur.currency);
       setNotes(cur.notes || '');
       setCustomerId(cur.customer.id);
@@ -97,8 +100,8 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
     setSaving(true);
     const payload: InvoiceUpsert = {
       invoiceNumber,
-      invoiceDate: dateInputToIso(invoiceDate),
-      dueDate: dateInputToIso(dueDate),
+      invoiceDate,
+      dueDate,
       currency,
       notes,
       customerId,

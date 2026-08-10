@@ -45,8 +45,8 @@ const sender: Sender = {
 const invoice: InvoiceDetail = {
 	id: 'i1',
 	invoiceNumber: 'INV-2024-001',
-	invoiceDate: '2024-01-15T00:00:00Z',
-	dueDate: '2024-02-15T00:00:00Z',
+	invoiceDate: '2024-01-15',
+	dueDate: '2024-02-15',
 	currency: 'EUR',
 	notes: 'Thanks for your business',
 	customer: {
@@ -124,10 +124,16 @@ describe('InvoiceForm edit-mode load, against the real store', () => {
 
 		await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
 
+		// Dates are asserted explicitly here (not just left to objectContaining's other keys) because
+		// this is the regression case for the date round-trip: loading a fetched date into the <input
+		// type="date"> field and saving it back must reproduce the exact same "yyyy-MM-dd" string,
+		// with no drift introduced by the load/save path.
 		expect(invoicesService.updateInvoice).toHaveBeenCalledWith(
 			'i1',
 			expect.objectContaining({
 				invoiceNumber: 'INV-2024-001',
+				invoiceDate: '2024-01-15',
+				dueDate: '2024-02-15',
 				customerId: 'c1',
 				senderId: 's1',
 			})
