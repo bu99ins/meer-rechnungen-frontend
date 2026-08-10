@@ -86,8 +86,8 @@ TypeScript sources: [src/types/](../src/types/).
 {
   id: string;
   invoiceNumber: string;
-  invoiceDate: string;      // ISO date
-  dueDate: string;          // ISO date
+  invoiceDate: string;      // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string;          // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   totalAmount: number;
 }
@@ -98,8 +98,8 @@ TypeScript sources: [src/types/](../src/types/).
 {
   id: string;
   invoiceNumber: string;
-  invoiceDate: string;
-  dueDate: string;
+  invoiceDate: string;      // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string;          // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   notes?: string;
   customer: {
@@ -139,8 +139,8 @@ TypeScript sources: [src/types/](../src/types/).
 ```typescript
 {
   invoiceNumber: string;
-  invoiceDate: string;
-  dueDate: string;
+  invoiceDate: string;      // "yyyy-MM-dd" calendar date, no time/timezone component
+  dueDate: string;          // "yyyy-MM-dd" calendar date, no time/timezone component
   currency: string;
   notes?: string;
   customerId: string;       // Reference by ID

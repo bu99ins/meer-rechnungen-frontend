@@ -12,8 +12,8 @@ vi.mock('../../store/invoicesStore', () => ({
 const baseInvoice: InvoiceDetail = {
   id: 'inv1',
   invoiceNumber: 'INV-001',
-  invoiceDate: '2026-07-01T00:00:00Z',
-  dueDate: '2026-07-15T00:00:00Z',
+  invoiceDate: '2026-07-01',
+  dueDate: '2026-07-15',
   currency: 'EUR',
   customer: {
     id: 'c1',
