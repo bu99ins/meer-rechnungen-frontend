@@ -5,12 +5,17 @@ import { useCustomersStore } from '../../store/customersStore';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
-const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
-  <div className="grid grid-cols-12 py-2">
-    <div className="col-span-4 text-sm text-gray-500">{label}</div>
-    <div className="col-span-8 text-sm text-gray-900">{value ?? '-'}</div>
-  </div>
-);
+// A row whose value is empty or whitespace-only is omitted entirely — label and all — rather than
+// showing a dash or an empty value (spec optional-sender-and-customer-fields.md requirement 10).
+const Row: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => {
+  if (!value || !value.trim()) return null;
+  return (
+    <div className="grid grid-cols-12 py-2">
+      <div className="col-span-4 text-sm text-gray-500">{label}</div>
+      <div className="col-span-8 text-sm text-gray-900">{value}</div>
+    </div>
+  );
+};
 
 const CustomerDetails: React.FC = () => {
   const { id } = useParams();

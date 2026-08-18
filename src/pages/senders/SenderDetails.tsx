@@ -4,12 +4,17 @@ import Loading from '../../components/Loading';
 import { useSendersStore } from '../../store/sendersStore';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
-const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
-  <div className="grid grid-cols-12 py-2">
-    <div className="col-span-4 text-sm text-gray-500">{label}</div>
-    <div className="col-span-8 text-sm text-gray-900">{value ?? '-'}</div>
-  </div>
-);
+// A row whose value is empty or whitespace-only is omitted entirely — label and all — rather than
+// showing a dash or an empty value (spec optional-sender-and-customer-fields.md requirement 10).
+const Row: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => {
+  if (!value || !value.trim()) return null;
+  return (
+    <div className="grid grid-cols-12 py-2">
+      <div className="col-span-4 text-sm text-gray-500">{label}</div>
+      <div className="col-span-8 text-sm text-gray-900">{value}</div>
+    </div>
+  );
+};
 
 const SenderDetails: React.FC = () => {
   const { id } = useParams();
@@ -37,6 +42,8 @@ const SenderDetails: React.FC = () => {
         <Row label="Address" value={current.senderAddress} />
         <Row label="Tax/VAT" value={current.senderTaxVatId} />
         <Row label="Bank Details" value={current.bankDetails} />
+        <Row label="Phone" value={current.senderPhone} />
+        <Row label="Email" value={current.senderEmail} />
       </div>
     </div>
   );

@@ -134,6 +134,16 @@ TypeScript sources: [src/types/](../src/types/).
   totalAmount: number;
 }
 ```
+The backend's `sender` payload here also carries `senderPhone`/`senderEmail` (same shape as the
+standalone Sender response below), but `SenderRef` in `src/types/invoice.ts` deliberately doesn't
+declare them — the invoice editor has no use for them and is out of scope for exposing them.
+Likewise, the backend's `customer` payload here carries `companyName`/`customerAddress`/
+`postalCode`/`customerTaxVatId` as `string | null` (same canonicalize-to-`null` convention as the
+standalone Customer response below), but `CustomerRef` in `src/types/invoice.ts` still declares
+them as plain `string` — the invoice editor is out of scope for this change, so this divergence
+was left as-is rather than widened; `src/pages/invoices/InvoiceDetails.tsx`'s own `Row` component tolerates it at
+runtime (`value ?? '-'`) but renders a `-` for a blank value rather than omitting the row, unlike
+the customer/sender details pages.
 
 **Upsert (create/update)**:
 ```typescript
@@ -156,22 +166,29 @@ TypeScript sources: [src/types/](../src/types/).
 ```typescript
 {
   id?: string;
-  companyName: string;
+  companyName: string | null;
   customerName: string;
-  customerAddress: string;
-  postalCode: string;
+  customerAddress: string | null;
+  postalCode: string | null;
   customerEmail: string;
-  customerTaxVatId: string;
+  customerTaxVatId: string | null;
   customerType: 'Individual' | 'Business';
 }
 ```
-`customerType` is `'Individual'` or `'Business'`. `companyName` and `customerTaxVatId` are required
-(must be present, `""` is fine) for both classifications — but are only meaningful for `Business`,
-where they are also non-blank. Create defaults `customerType` to `'Individual'` when omitted; Update
-requires it explicitly on every request (an omission fails validation rather than being applied) —
-the frontend must always send it, including on saves where the classification itself is unchanged.
-`GET /api/invoices` list items do not embed customer data at all, so `customerType` (like the rest
-of the customer shape) does not appear there.
+`customerType` is `'Individual'` or `'Business'`. `companyName`, `customerAddress`, `postalCode`,
+and `customerTaxVatId` are all optional: a request may send `null`, `""`, a whitespace-only string,
+or omit the key entirely, and none of these raise a validation error — except `companyName`/
+`customerTaxVatId` for a `Business` customer, which still require a real non-blank value. Whatever
+"absent" form is sent, the backend canonicalizes the stored and returned value to `null` — GET
+responses (and the customer embedded in invoice responses) never distinguish a request that sent
+`""` from one that sent `null`. The frontend's local component state coalesces this to `''` once, at
+population, so downstream code (`.trim()` checks, controlled inputs) never has to handle `null` directly — see
+`src/pages/customers/CustomerForm.tsx`. Create defaults `customerType` to `'Individual'` when
+omitted; Update requires it explicitly on every request (an omission fails validation rather than
+being applied) — the frontend must always send it, including on saves where the classification
+itself is unchanged. `GET /api/invoices` list items do not embed customer data at all, so
+`customerType` (like the rest of the customer shape) does not appear there. `customerName` and
+`customerEmail` remain required non-blank and are never `null`.
 
 ### Sender
 ```typescript
@@ -182,5 +199,13 @@ of the customer shape) does not appear there.
   senderAddress: string;
   senderTaxVatId: string;
   bankDetails: string;
+  senderPhone: string | null;
+  senderEmail: string | null;
 }
 ```
+`senderPhone` and `senderEmail` are optional, with the same canonicalize-to-`null` convention as
+the Customer fields above: a request may send `null`, `""`, a whitespace-only string, or omit the
+key, and the backend always returns `null` for an absent value. When `senderEmail` is non-blank it must be a
+syntactically valid email address; `senderPhone` is accepted as free text. `senderCompanyName`,
+`senderFullName`, `senderAddress`, `senderTaxVatId` and `bankDetails` remain required and are never
+`null`.

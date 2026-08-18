@@ -21,6 +21,8 @@ const sender: Sender = {
 	senderAddress: 'Musterstrasse 1',
 	senderTaxVatId: 'DE123456789',
 	bankDetails: 'IBAN DE00 0000 0000 0000 0000 00',
+	senderPhone: '',
+	senderEmail: '',
 };
 
 function renderEdit(id: string) {
@@ -54,6 +56,24 @@ describe('SenderForm edit-mode load, against the real store', () => {
 		expect(screen.getByLabelText('Bank Details')).toHaveValue('IBAN DE00 0000 0000 0000 0000 00');
 	});
 
+	it('populates Phone and Email as empty when the backend returns null (absence canonicalized), without a controlled-input warning', async () => {
+		// toHaveValue('') alone would pass even if a raw `null` reached the input's value prop —
+		// React renders that as an empty DOM value too, but logs a controlled/uncontrolled-input
+		// warning in the process. Asserting no console.error fired is what actually catches a
+		// missing `?? ''` coalesce at population time.
+		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.mocked(sendersService.getSender).mockResolvedValue({ ...sender, senderPhone: null, senderEmail: null });
+
+		renderEdit('s1');
+
+		expect(await screen.findByLabelText('Company Name')).toHaveValue('Acme GmbH');
+		expect(screen.getByLabelText('Phone')).toHaveValue('');
+		expect(screen.getByLabelText('Email')).toHaveValue('');
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+		consoleErrorSpy.mockRestore();
+	});
+
 	it("sends the loaded sender's own data back on save, unchanged", async () => {
 		vi.mocked(sendersService.getSender).mockResolvedValue(sender);
 		vi.mocked(sendersService.updateSender).mockResolvedValue(sender);
@@ -78,5 +98,78 @@ describe('SenderForm edit-mode load, against the real store', () => {
 				bankDetails: 'IBAN DE00 0000 0000 0000 0000 00',
 			})
 		);
+	});
+
+	it('populates Phone and Email from the loaded sender, and persists edited values on save', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderPhone: '+372 5555 5555',
+			senderEmail: 'office@acme.example',
+		});
+		vi.mocked(sendersService.updateSender).mockResolvedValue(sender);
+		vi.mocked(sendersService.getSenders).mockResolvedValue({ items: [sender], total: 1, offset: 0, limit: 10 });
+
+		renderEdit('s1');
+
+		expect(await screen.findByLabelText('Phone')).toHaveValue('+372 5555 5555');
+		expect(screen.getByLabelText('Email')).toHaveValue('office@acme.example');
+
+		await userEvent.clear(screen.getByLabelText('Phone'));
+		await userEvent.type(screen.getByLabelText('Phone'), '+49 30 123456');
+		await userEvent.clear(screen.getByLabelText('Email'));
+		await userEvent.type(screen.getByLabelText('Email'), 'hello@acme.example');
+
+		await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+		expect(sendersService.updateSender).toHaveBeenCalledWith(
+			's1',
+			expect.objectContaining({
+				senderPhone: '+49 30 123456',
+				senderEmail: 'hello@acme.example',
+			})
+		);
+	});
+
+	it('disables the save control while Address, Tax/VAT ID or Bank Details is blank', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderAddress: '',
+			senderTaxVatId: '',
+			bankDetails: '',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+	});
+
+	it('keeps the save control disabled when Address is whitespace-only', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderAddress: '   ',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+	});
+
+	it('keeps the save control disabled when Full Name, Tax/VAT ID or Bank Details is whitespace-only', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderFullName: '   ',
+			senderTaxVatId: '  \t ',
+			bankDetails: ' \n ',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
 	});
 });

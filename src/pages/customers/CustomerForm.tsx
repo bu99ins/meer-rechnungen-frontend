@@ -41,18 +41,26 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
   useEffect(() => {
     if (mode === 'edit' && store.current) {
       const c = store.current;
-      setCompanyName(c.companyName);
+      // The API returns null for these fields when absent (canonicalized server-side); local
+      // form state stays a plain string throughout the component's lifetime — coalescing here,
+      // once, keeps every downstream read (canSave's .trim() calls, controlled inputs) simple.
+      setCompanyName(c.companyName ?? '');
       setCustomerName(c.customerName);
-      setCustomerAddress(c.customerAddress);
-      setPostalCode(c.postalCode);
+      setCustomerAddress(c.customerAddress ?? '');
+      setPostalCode(c.postalCode ?? '');
       setCustomerEmail(c.customerEmail);
-      setCustomerTaxVatId(c.customerTaxVatId);
+      setCustomerTaxVatId(c.customerTaxVatId ?? '');
       setCustomerType(c.customerType);
     }
   }, [mode, store.current]);
 
   const isBusiness = requiresCompanyFields(customerType);
-  const canSave = customerName && customerEmail && (!isBusiness || (companyName && customerTaxVatId));
+  // Trimmed, not raw truthiness: a whitespace-only value is "no value", same as the backend's own
+  // NotEmpty() check treats it.
+  const canSave =
+    customerName.trim() &&
+    customerEmail.trim() &&
+    (!isBusiness || (companyName.trim() && customerTaxVatId.trim()));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
