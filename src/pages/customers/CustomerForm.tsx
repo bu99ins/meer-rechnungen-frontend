@@ -52,7 +52,12 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
   }, [mode, store.current]);
 
   const isBusiness = requiresCompanyFields(customerType);
-  const canSave = customerName && customerEmail && (!isBusiness || (companyName && customerTaxVatId));
+  // Trimmed, not raw truthiness: a whitespace-only value is "no value", same as the backend's own
+  // NotEmpty() check treats it.
+  const canSave =
+    customerName.trim() &&
+    customerEmail.trim() &&
+    (!isBusiness || (companyName.trim() && customerTaxVatId.trim()));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

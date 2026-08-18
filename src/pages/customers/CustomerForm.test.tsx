@@ -159,6 +159,36 @@ describe('CustomerForm classification', () => {
     );
   });
 
+  it('keeps the save control disabled when Customer Name is whitespace-only', async () => {
+    mockStore();
+    renderCreate();
+
+    await userEvent.type(screen.getByLabelText('Customer Name'), '   ');
+    await userEvent.type(screen.getByLabelText('Email'), 'jane@example.com');
+
+    expect(screen.getByRole('button', { name: 'Create Customer' })).toBeDisabled();
+  });
+
+  it('keeps the save control disabled when a Business customer\'s Company Name or Tax/VAT ID is whitespace-only', async () => {
+    mockStore();
+    renderCreate();
+
+    await userEvent.selectOptions(screen.getByLabelText('Customer Type'), 'Business');
+    await userEvent.type(screen.getByLabelText('Customer Name'), 'Jane Doe');
+    await userEvent.type(screen.getByLabelText('Email'), 'jane@example.com');
+    await userEvent.type(screen.getByLabelText('Company Name'), '   ');
+    await userEvent.type(screen.getByLabelText('Tax/VAT ID'), 'DE999888777');
+
+    expect(screen.getByRole('button', { name: 'Create Customer' })).toBeDisabled();
+
+    await userEvent.clear(screen.getByLabelText('Company Name'));
+    await userEvent.type(screen.getByLabelText('Company Name'), 'Acme Corp');
+    await userEvent.clear(screen.getByLabelText('Tax/VAT ID'));
+    await userEvent.type(screen.getByLabelText('Tax/VAT ID'), '  \t ');
+
+    expect(screen.getByRole('button', { name: 'Create Customer' })).toBeDisabled();
+  });
+
   it('includes customerType explicitly in the create payload', async () => {
     const createSpy = vi.fn().mockResolvedValue({ id: 'new-id' });
     mockStore({ create: createSpy });

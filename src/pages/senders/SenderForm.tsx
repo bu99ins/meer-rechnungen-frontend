@@ -49,9 +49,15 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
 
   // Address, Tax/VAT ID and Bank Details are required by the backend (spec requirement 5/6) — the
   // form must block submission on them itself instead of letting a blank value reach the backend
-  // and come back as a 400. Phone and Email are optional and deliberately excluded here.
+  // and come back as a 400. Phone and Email are optional and deliberately excluded here. Trimmed,
+  // not raw truthiness: a whitespace-only value is "no value", same as the backend's own
+  // NotEmpty()/NotNull() checks treat it.
   const canSave =
-    senderCompanyName && senderFullName && senderAddress && senderTaxVatId && bankDetails;
+    senderCompanyName.trim() &&
+    senderFullName.trim() &&
+    senderAddress.trim() &&
+    senderTaxVatId.trim() &&
+    bankDetails.trim();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

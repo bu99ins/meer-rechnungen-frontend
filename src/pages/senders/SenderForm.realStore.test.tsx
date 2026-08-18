@@ -126,4 +126,32 @@ describe('SenderForm edit-mode load, against the real store', () => {
 
 		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
 	});
+
+	it('keeps the save control disabled when Address is whitespace-only', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderAddress: '   ',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+	});
+
+	it('keeps the save control disabled when Full Name, Tax/VAT ID or Bank Details is whitespace-only', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderFullName: '   ',
+			senderTaxVatId: '  \t ',
+			bankDetails: ' \n ',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+	});
 });
