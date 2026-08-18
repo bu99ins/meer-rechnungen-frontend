@@ -41,12 +41,15 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
   useEffect(() => {
     if (mode === 'edit' && store.current) {
       const c = store.current;
-      setCompanyName(c.companyName);
+      // The API returns null for these fields when absent (canonicalized server-side); local
+      // form state stays a plain string throughout the component's lifetime — coalescing here,
+      // once, keeps every downstream read (canSave's .trim() calls, controlled inputs) simple.
+      setCompanyName(c.companyName ?? '');
       setCustomerName(c.customerName);
-      setCustomerAddress(c.customerAddress);
-      setPostalCode(c.postalCode);
+      setCustomerAddress(c.customerAddress ?? '');
+      setPostalCode(c.postalCode ?? '');
       setCustomerEmail(c.customerEmail);
-      setCustomerTaxVatId(c.customerTaxVatId);
+      setCustomerTaxVatId(c.customerTaxVatId ?? '');
       setCustomerType(c.customerType);
     }
   }, [mode, store.current]);

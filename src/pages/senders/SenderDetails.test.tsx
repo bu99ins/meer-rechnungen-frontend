@@ -54,4 +54,12 @@ describe('SenderDetails', () => {
 		expect(screen.queryByText('Phone')).not.toBeInTheDocument();
 		expect(screen.getByText('Email')).toBeInTheDocument();
 	});
+
+	it('omits the Phone and Email rows when the backend returns null (absence canonicalized)', () => {
+		mockStore({ ...baseSender, senderPhone: null, senderEmail: null });
+		render(<SenderDetails />, { wrapper: MemoryRouter });
+
+		expect(screen.queryByText('Phone')).not.toBeInTheDocument();
+		expect(screen.queryByText('Email')).not.toBeInTheDocument();
+	});
 });

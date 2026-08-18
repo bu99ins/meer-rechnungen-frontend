@@ -2,11 +2,14 @@ export type CustomerType = 'Individual' | 'Business';
 
 export type Customer = {
   id?: string;
-  companyName: string;
+  // Optional: null when absent (canonicalized by the backend), required non-blank for Business.
+  companyName: string | null;
   customerName: string;
-  customerAddress: string;
-  postalCode: string;
+  // Optional for every customer regardless of classification: null when absent.
+  customerAddress: string | null;
+  postalCode: string | null;
   customerEmail: string;
-  customerTaxVatId: string;
+  // Optional: null when absent, required non-blank for Business.
+  customerTaxVatId: string | null;
   customerType: CustomerType;
 };

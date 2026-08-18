@@ -7,7 +7,7 @@ import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 // A row whose value is empty or whitespace-only is omitted entirely — label and all — rather than
 // showing a dash or an empty value (spec optional-sender-and-customer-fields.md requirement 10).
-const Row: React.FC<{ label: string; value?: string }> = ({ label, value }) => {
+const Row: React.FC<{ label: string; value?: string | null }> = ({ label, value }) => {
   if (!value || !value.trim()) return null;
   return (
     <div className="grid grid-cols-12 py-2">

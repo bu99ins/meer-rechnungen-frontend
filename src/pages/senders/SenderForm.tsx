@@ -42,8 +42,10 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
       setSenderAddress(s.senderAddress);
       setSenderTaxVatId(s.senderTaxVatId);
       setBankDetails(s.bankDetails);
-      setSenderPhone(s.senderPhone);
-      setSenderEmail(s.senderEmail);
+      // The API returns null for these when absent (canonicalized server-side); local form state
+      // stays a plain string throughout the component's lifetime.
+      setSenderPhone(s.senderPhone ?? '');
+      setSenderEmail(s.senderEmail ?? '');
     }
   }, [mode, store.current]);
 

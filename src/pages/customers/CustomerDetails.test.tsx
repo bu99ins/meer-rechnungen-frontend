@@ -63,4 +63,11 @@ describe('CustomerDetails', () => {
     expect(screen.queryByText('Address')).not.toBeInTheDocument();
     expect(screen.getByText('Postal Code')).toBeInTheDocument();
   });
+
+  it('omits the Address and Postal Code rows when the backend returns null (absence canonicalized)', () => {
+    mockStore({ ...baseCustomer, customerAddress: null, postalCode: null });
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.queryByText('Address')).not.toBeInTheDocument();
+    expect(screen.queryByText('Postal Code')).not.toBeInTheDocument();
+  });
 });

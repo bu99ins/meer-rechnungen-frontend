@@ -56,6 +56,24 @@ describe('SenderForm edit-mode load, against the real store', () => {
 		expect(screen.getByLabelText('Bank Details')).toHaveValue('IBAN DE00 0000 0000 0000 0000 00');
 	});
 
+	it('populates Phone and Email as empty when the backend returns null (absence canonicalized), without a controlled-input warning', async () => {
+		// toHaveValue('') alone would pass even if a raw `null` reached the input's value prop —
+		// React renders that as an empty DOM value too, but logs a controlled/uncontrolled-input
+		// warning in the process. Asserting no console.error fired is what actually catches a
+		// missing `?? ''` coalesce at population time.
+		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.mocked(sendersService.getSender).mockResolvedValue({ ...sender, senderPhone: null, senderEmail: null });
+
+		renderEdit('s1');
+
+		expect(await screen.findByLabelText('Company Name')).toHaveValue('Acme GmbH');
+		expect(screen.getByLabelText('Phone')).toHaveValue('');
+		expect(screen.getByLabelText('Email')).toHaveValue('');
+		expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+		consoleErrorSpy.mockRestore();
+	});
+
 	it("sends the loaded sender's own data back on save, unchanged", async () => {
 		vi.mocked(sendersService.getSender).mockResolvedValue(sender);
 		vi.mocked(sendersService.updateSender).mockResolvedValue(sender);

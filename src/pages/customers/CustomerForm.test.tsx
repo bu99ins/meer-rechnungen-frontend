@@ -29,6 +29,19 @@ const individualCustomer: Customer = {
   customerType: 'Individual',
 };
 
+// The real API shape for an Individual customer whose optional fields were never set: the
+// backend canonicalizes absence to null, not "" (spec optional-sender-and-customer-fields.md
+// implementation notes, as amended).
+const individualCustomerWithNullFields: Customer = {
+  ...businessCustomer,
+  id: 'c3',
+  companyName: null,
+  customerAddress: null,
+  postalCode: null,
+  customerTaxVatId: null,
+  customerType: 'Individual',
+};
+
 type CustomersStoreShape = ReturnType<typeof useCustomersStore>;
 
 function mockStore(overrides: Partial<CustomersStoreShape> = {}): CustomersStoreShape {
@@ -115,6 +128,23 @@ describe('CustomerForm classification', () => {
     expect(await screen.findByLabelText('Customer Type')).toHaveValue('Individual');
     expect(screen.queryByLabelText('Company Name')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Tax/VAT ID')).not.toBeInTheDocument();
+  });
+
+  it('loads an Individual customer whose optional fields are null without crashing, and lets it be switched to Business', async () => {
+    mockStore({ current: individualCustomerWithNullFields, fetchOne: vi.fn().mockResolvedValue(undefined) });
+    renderEdit('c3');
+
+    expect(await screen.findByLabelText('Customer Type')).toHaveValue('Individual');
+    expect(screen.getByLabelText('Postal Code')).toHaveValue('');
+    expect(screen.getByLabelText('Address')).toHaveValue('');
+
+    // The one path that reads the null-populated companyName/customerTaxVatId through .trim() —
+    // must not throw when switching a customer with null optional fields to Business.
+    await userEvent.selectOptions(screen.getByLabelText('Customer Type'), 'Business');
+
+    expect(screen.getByLabelText('Company Name')).toHaveValue('');
+    expect(screen.getByLabelText('Tax/VAT ID')).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
   });
 
   it('preserves a typed Company Name across a Business -> Individual -> Business toggle', async () => {
