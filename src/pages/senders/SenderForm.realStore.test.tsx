@@ -21,6 +21,8 @@ const sender: Sender = {
 	senderAddress: 'Musterstrasse 1',
 	senderTaxVatId: 'DE123456789',
 	bankDetails: 'IBAN DE00 0000 0000 0000 0000 00',
+	senderPhone: '',
+	senderEmail: '',
 };
 
 function renderEdit(id: string) {
@@ -78,5 +80,50 @@ describe('SenderForm edit-mode load, against the real store', () => {
 				bankDetails: 'IBAN DE00 0000 0000 0000 0000 00',
 			})
 		);
+	});
+
+	it('populates Phone and Email from the loaded sender, and persists edited values on save', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderPhone: '+372 5555 5555',
+			senderEmail: 'office@acme.example',
+		});
+		vi.mocked(sendersService.updateSender).mockResolvedValue(sender);
+		vi.mocked(sendersService.getSenders).mockResolvedValue({ items: [sender], total: 1, offset: 0, limit: 10 });
+
+		renderEdit('s1');
+
+		expect(await screen.findByLabelText('Phone')).toHaveValue('+372 5555 5555');
+		expect(screen.getByLabelText('Email')).toHaveValue('office@acme.example');
+
+		await userEvent.clear(screen.getByLabelText('Phone'));
+		await userEvent.type(screen.getByLabelText('Phone'), '+49 30 123456');
+		await userEvent.clear(screen.getByLabelText('Email'));
+		await userEvent.type(screen.getByLabelText('Email'), 'hello@acme.example');
+
+		await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+		expect(sendersService.updateSender).toHaveBeenCalledWith(
+			's1',
+			expect.objectContaining({
+				senderPhone: '+49 30 123456',
+				senderEmail: 'hello@acme.example',
+			})
+		);
+	});
+
+	it('disables the save control while Address, Tax/VAT ID or Bank Details is blank', async () => {
+		vi.mocked(sendersService.getSender).mockResolvedValue({
+			...sender,
+			senderAddress: '',
+			senderTaxVatId: '',
+			bankDetails: '',
+		});
+
+		renderEdit('s1');
+
+		await screen.findByLabelText('Company Name');
+
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
 	});
 });

@@ -16,6 +16,8 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
   const [senderAddress, setSenderAddress] = useState('');
   const [senderTaxVatId, setSenderTaxVatId] = useState('');
   const [bankDetails, setBankDetails] = useState('');
+  const [senderPhone, setSenderPhone] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,16 +42,22 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
       setSenderAddress(s.senderAddress);
       setSenderTaxVatId(s.senderTaxVatId);
       setBankDetails(s.bankDetails);
+      setSenderPhone(s.senderPhone);
+      setSenderEmail(s.senderEmail);
     }
   }, [mode, store.current]);
 
-  const canSave = senderCompanyName && senderFullName;
+  // Address, Tax/VAT ID and Bank Details are required by the backend (spec requirement 5/6) — the
+  // form must block submission on them itself instead of letting a blank value reach the backend
+  // and come back as a 400. Phone and Email are optional and deliberately excluded here.
+  const canSave =
+    senderCompanyName && senderFullName && senderAddress && senderTaxVatId && bankDetails;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSave) return;
     setSaving(true);
-    const payload = { senderCompanyName, senderFullName, senderAddress, senderTaxVatId, bankDetails };
+    const payload = { senderCompanyName, senderFullName, senderAddress, senderTaxVatId, bankDetails, senderPhone, senderEmail };
     try {
       if (mode === 'create') {
         const created = await store.create(payload);
@@ -89,10 +97,12 @@ const SenderForm: React.FC<Props> = ({ mode }) => {
       <div className="bg-white border border-gray-200 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <TextInput id="senderCompanyName" label="Company Name" value={senderCompanyName} onChange={(e) => setSenderCompanyName(e.target.value)} required />
         <TextInput id="senderFullName" label="Full Name" value={senderFullName} onChange={(e) => setSenderFullName(e.target.value)} required />
-        <TextInput id="senderTaxVatId" label="Tax/VAT ID" value={senderTaxVatId} onChange={(e) => setSenderTaxVatId(e.target.value)} />
-        <TextInput id="bankDetails" label="Bank Details" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} />
+        <TextInput id="senderTaxVatId" label="Tax/VAT ID" value={senderTaxVatId} onChange={(e) => setSenderTaxVatId(e.target.value)} required />
+        <TextInput id="bankDetails" label="Bank Details" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} required />
+        <TextInput id="senderPhone" label="Phone" value={senderPhone} onChange={(e) => setSenderPhone(e.target.value)} />
+        <TextInput id="senderEmail" label="Email" type="email" value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} />
         <div className="sm:col-span-2">
-          <TextArea id="senderAddress" label="Address" value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} rows={3} />
+          <TextArea id="senderAddress" label="Address" value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} rows={3} required />
         </div>
       </div>
     </form>

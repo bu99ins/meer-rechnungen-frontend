@@ -40,6 +40,8 @@ const sender: Sender = {
 	senderAddress: 'Beispielweg 2',
 	senderTaxVatId: 'DE987654321',
 	bankDetails: 'IBAN DE11 1111 1111 1111 1111 11',
+	senderPhone: '',
+	senderEmail: '',
 };
 
 const invoice: InvoiceDetail = {

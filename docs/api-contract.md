@@ -134,6 +134,9 @@ TypeScript sources: [src/types/](../src/types/).
   totalAmount: number;
 }
 ```
+The backend's `sender` payload here also carries `senderPhone`/`senderEmail` (same shape as the
+standalone Sender response below), but `SenderRef` in `src/types/invoice.ts` deliberately doesn't
+declare them — the invoice editor has no use for them and is out of scope for exposing them.
 
 **Upsert (create/update)**:
 ```typescript
@@ -171,7 +174,10 @@ where they are also non-blank. Create defaults `customerType` to `'Individual'` 
 requires it explicitly on every request (an omission fails validation rather than being applied) —
 the frontend must always send it, including on saves where the classification itself is unchanged.
 `GET /api/invoices` list items do not embed customer data at all, so `customerType` (like the rest
-of the customer shape) does not appear there.
+of the customer shape) does not appear there. `customerAddress` and `postalCode` are required to be
+present as keys but may be `""` for every customer regardless of classification — the backend raises
+no validation error for either being blank; `customerName` and `customerEmail` remain required
+non-blank.
 
 ### Sender
 ```typescript
@@ -182,5 +188,11 @@ of the customer shape) does not appear there.
   senderAddress: string;
   senderTaxVatId: string;
   bankDetails: string;
+  senderPhone: string;
+  senderEmail: string;
 }
 ```
+`senderPhone` and `senderEmail` are optional — `""` is fine and raises no validation error. When
+`senderEmail` is non-empty it must be a syntactically valid email address; `senderPhone` is accepted
+as free text. `senderCompanyName`, `senderFullName`, `senderAddress`, `senderTaxVatId` and
+`bankDetails` remain required.

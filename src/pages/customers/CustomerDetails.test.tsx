@@ -40,4 +40,27 @@ describe('CustomerDetails', () => {
     render(<CustomerDetails />, { wrapper: MemoryRouter });
     expect(screen.getByRole('heading', { name: 'Erika Musterfrau' })).toBeInTheDocument();
   });
+
+  it('shows Address and Postal Code rows when both are present', () => {
+    mockStore(baseCustomer);
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByText('Address')).toBeInTheDocument();
+    expect(screen.getByText('Musterstrasse 1')).toBeInTheDocument();
+    expect(screen.getByText('Postal Code')).toBeInTheDocument();
+    expect(screen.getByText('10115')).toBeInTheDocument();
+  });
+
+  it('omits the Address and Postal Code rows entirely when both are blank', () => {
+    mockStore({ ...baseCustomer, customerAddress: '', postalCode: '' });
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.queryByText('Address')).not.toBeInTheDocument();
+    expect(screen.queryByText('Postal Code')).not.toBeInTheDocument();
+  });
+
+  it('omits only the blank one when just one of Address/Postal Code is set', () => {
+    mockStore({ ...baseCustomer, customerAddress: '   ', postalCode: '10115' });
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.queryByText('Address')).not.toBeInTheDocument();
+    expect(screen.getByText('Postal Code')).toBeInTheDocument();
+  });
 });
