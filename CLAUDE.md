@@ -47,7 +47,6 @@ To add a new entity, replicate all three layers plus `src/types/<entity>.ts` and
 ## Gotchas
 
 - `tsconfig.app.json` has strict mode plus `noUnusedLocals`/`noUnusedParameters`; the build (and therefore deploy) fails on unused symbols.
-- `src/lib/jwt.js`, `src/lib/problem.js`, `src/lib/refreshDecision.js` (plus their `test/*.test.js`) are plain JS ESM run directly by Node's test runner — they are outside the Vite/TS build.
+- `src/lib/jwt.js`, `src/lib/problem.js`, `src/lib/refreshDecision.js`, `src/lib/customerClassification.js`, `src/lib/customerDisplay.js` (each with a hand-written `.d.ts` and a `test/*.test.js`) are plain JS ESM run directly by Node's test runner — they are outside the Vite/TS build.
 - PDF download (`downloadInvoicePdf` in `src/services/invoices.ts`) parses the `Content-Disposition` header defensively (Axios v1 AxiosHeaders vs plain object) and falls back to `invoice-<id>.pdf`.
-- `src/pages/InvoicesList.tsx` (top-level) is a leftover duplicate; the routed one is `src/pages/invoices/InvoicesList.tsx`.
 - Package name in `package.json` is `invoice-builder-frontend`; the product name is "Meer von Rechnungen".
