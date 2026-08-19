@@ -9,7 +9,7 @@ import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
   <div className="grid grid-cols-12 py-2">
     <div className="col-span-4 text-sm text-brand-gray">{label}</div>
-    <div className="col-span-8 text-sm text-gray-900">{value ?? '-'}</div>
+    <div className="col-span-8 text-sm text-gray-900 break-words">{value ?? '-'}</div>
   </div>
 );
 
@@ -27,12 +27,12 @@ const InvoiceDetails: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Invoice {current.invoiceNumber}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 break-words">Invoice {current.invoiceNumber}</h1>
           <p className="text-sm text-brand-gray">Issued on {formatDate(current.invoiceDate)} • Due {formatDate(current.dueDate)}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => id && download(id)} className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">
             <ArrowDownTrayIcon className="h-4 w-4" /> Download PDF
           </button>
@@ -67,26 +67,30 @@ const InvoiceDetails: React.FC = () => {
             <div className="p-4">
               <h2 className="text-sm font-semibold text-gray-900">Line Items</h2>
             </div>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Item</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Qty</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Unit Price</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
-                {current.lineItems.map((li, idx) => (
-                  <tr key={li.id ?? idx}>
-                    <td className="px-4 py-2 text-sm text-gray-900">{li.itemName}</td>
-                    <td className="px-4 py-2 text-sm text-gray-700 text-right">{li.quantity}</td>
-                    <td className="px-4 py-2 text-sm text-gray-700 text-right">{formatCurrency(li.unitPrice, current.currency)}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900 text-right">{formatCurrency(li.total, current.currency)}</td>
+            {/* The table's own scroll boundary — a wide table scrolls within this div (req 18)
+                instead of stretching the page itself (req 19), matching the list pages' pattern. */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Item</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Qty</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Unit Price</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {current.lineItems.map((li, idx) => (
+                    <tr key={li.id ?? idx}>
+                      <td className="px-4 py-2 text-sm text-gray-900">{li.itemName}</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 text-right">{li.quantity}</td>
+                      <td className="px-4 py-2 text-sm text-gray-700 text-right">{formatCurrency(li.unitPrice, current.currency)}</td>
+                      <td className="px-4 py-2 text-sm text-gray-900 text-right">{formatCurrency(li.total, current.currency)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div className="space-y-6">

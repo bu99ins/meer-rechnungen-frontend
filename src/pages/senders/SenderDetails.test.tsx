@@ -62,4 +62,23 @@ describe('SenderDetails', () => {
 		expect(screen.queryByText('Phone')).not.toBeInTheDocument();
 		expect(screen.queryByText('Email')).not.toBeInTheDocument();
 	});
+
+	it('lets the header row wrap so the Edit button never overflows a narrow viewport', () => {
+		mockStore(baseSender);
+		render(<SenderDetails />, { wrapper: MemoryRouter });
+		const heading = screen.getByRole('heading', { name: 'Acme GmbH' });
+		expect(heading.closest('div')?.parentElement).toHaveClass('flex-wrap');
+	});
+
+	it('lets a long detail value wrap instead of overflowing the page', () => {
+		mockStore(baseSender);
+		render(<SenderDetails />, { wrapper: MemoryRouter });
+		expect(screen.getByText('office@acme.example')).toHaveClass('break-words');
+	});
+
+	it('lets the heading wrap instead of overflowing the page', () => {
+		mockStore(baseSender);
+		render(<SenderDetails />, { wrapper: MemoryRouter });
+		expect(screen.getByRole('heading', { name: 'Acme GmbH' })).toHaveClass('break-words');
+	});
 });
