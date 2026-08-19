@@ -34,7 +34,9 @@
 ```
 src/
 ├── main.tsx              # Entry point; axios defaults (VITE_API_URL)
-├── App.tsx               # Root component; routing setup (BrowserRouter)
+├── App.tsx               # Root component (BrowserRouter) wrapping the exported AppRoutes, which
+│                         # holds the actual route tree; sibling create/edit routes are keyed on
+│                         # the pathname so React Router remounts the form instead of reusing it
 ├── App.css               # Global styles
 ├── index.css             # Tailwind + global resets
 ├── vite-env.d.ts         # Vite environment type definitions
