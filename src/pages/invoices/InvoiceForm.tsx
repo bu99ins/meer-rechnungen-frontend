@@ -13,6 +13,11 @@ type Props = { mode: 'create' | 'edit' };
 
 const emptyItem = (): LineItem => ({ itemName: '', quantity: 1, unitPrice: 0, total: 0 });
 
+// This product's users bill in euros, so a new invoice should start there rather than on USD —
+// the field stays free text (no dropdown, no ISO-4217 validation) and fully editable; this only
+// changes what's pre-filled before the user types anything.
+const DEFAULT_CURRENCY = 'EUR';
+
 const InvoiceForm: React.FC<Props> = ({ mode }) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -23,7 +28,7 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [notes, setNotes] = useState('');
   const [customerId, setCustomerId] = useState('');
   const [senderId, setSenderId] = useState('');

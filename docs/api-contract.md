@@ -88,13 +88,7 @@ TypeScript sources: [src/types/](../src/types/).
   invoiceNumber: string;
   invoiceDate: string;      // "yyyy-MM-dd" calendar date, no time/timezone component
   dueDate: string;          // "yyyy-MM-dd" calendar date, no time/timezone component
-  currency?: string;        // KNOWN GAP: the backend's GetInvoices projection does not actually
-                             // include this field today (confirmed against GetInvoices.Handler.cs
-                             // in the backend repo) even though the Detail shape below does send
-                             // it — every list row currently arrives with no currency at all. The
-                             // frontend's InvoiceListItem type and formatCurrency call already
-                             // treat it as optional/absent-safe; fixing the presentation for real
-                             // (distinct EUR vs USD rows) needs this field added on the backend.
+  currency: string;
   totalAmount: number;
 }
 ```
