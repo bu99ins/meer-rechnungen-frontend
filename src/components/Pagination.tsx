@@ -14,11 +14,11 @@ const Pagination: React.FC<Props> = ({ total, offset, limit, onChange }) => {
   const canNext = offset + limit < total;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <div className="text-sm text-brand-gray">
         Page {page} of {totalPages} • {total} items
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <select
           className="border border-gray-300 rounded-md px-2 py-1 text-sm"
           value={limit}

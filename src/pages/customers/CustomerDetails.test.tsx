@@ -70,4 +70,23 @@ describe('CustomerDetails', () => {
     expect(screen.queryByText('Address')).not.toBeInTheDocument();
     expect(screen.queryByText('Postal Code')).not.toBeInTheDocument();
   });
+
+  it('lets the header row wrap so the Edit button never overflows a narrow viewport', () => {
+    mockStore(baseCustomer);
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    const heading = screen.getByRole('heading', { name: 'Acme GmbH' });
+    expect(heading.closest('div')?.parentElement).toHaveClass('flex-wrap');
+  });
+
+  it('lets a long detail value wrap instead of overflowing the page', () => {
+    mockStore(baseCustomer);
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByText('erika@acme.example')).toHaveClass('break-words');
+  });
+
+  it('lets the heading wrap instead of overflowing the page', () => {
+    mockStore(baseCustomer);
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByRole('heading', { name: 'Acme GmbH' })).toHaveClass('break-words');
+  });
 });

@@ -43,18 +43,22 @@ src/
 ├── test-setup.ts         # Vitest setup (jest-dom matchers); loaded via vite.config.ts's test.setupFiles
 │
 ├── components/           # Reusable UI components (co-located *.test.tsx run under Vitest)
-│   ├── Layout.tsx        # Root layout wrapper (nav, sidebar, etc.)
+│   ├── Layout.tsx        # Root layout wrapper: header (nav or, below the narrow breakpoint, a
+│   │                     # menu button + dropdown panel — see docs/features-and-workflows.md
+│   │                     # "Narrow-viewport behavior") + <Outlet/>
 │   ├── Form.tsx          # Generic form component
 │   ├── Pagination.tsx    # Pagination control
 │   ├── ConfirmDialog.tsx # Delete/action confirmation modal
 │   ├── EmptyState.tsx    # "No data" placeholder
 │   ├── Loading.tsx       # Loading spinner/skeleton
-│   └── Loading.test.tsx  # Vitest + React Testing Library smoke test
+│   ├── Loading.test.tsx  # Vitest + React Testing Library smoke test
+│   ├── CardField.tsx     # Labelled value on a narrow-viewport list card
+│   └── DetailRow.tsx     # Labelled value on a detail page, omitted when blank
 │
 ├── pages/                # Page-level components
-│   ├── InvoicesList.tsx  # (top-level) leftover duplicate — unused, not routed
 │   ├── invoices/
-│   │   ├── InvoicesList.tsx    # Invoice list with table
+│   │   ├── InvoicesList.tsx    # Invoice list: table (wide) or cards (narrow) — see
+│   │   │                       # docs/features-and-workflows.md "Narrow-viewport behavior"
 │   │   ├── InvoiceDetails.tsx  # Invoice view with PDF download
 │   │   └── InvoiceForm.tsx     # Create/Edit invoice form
 │   ├── customers/
@@ -83,10 +87,13 @@ src/
 │   └── sender.ts         # Sender type
 │
 ├── hooks/                # Custom React hooks
-│   └── useKeyPress.ts    # Keyboard event hook
+│   ├── useKeyPress.ts    # Keyboard event hook
+│   └── useIsNarrow.ts    # The single narrow/wide breakpoint (matchMedia-backed) — see
+│                         # docs/features-and-workflows.md "Narrow-viewport behavior"
 │
 ├── lib/                  # Utility libraries
-│   └── api.ts            # Axios instance factory + JWT interceptor
+│   ├── api.ts            # Axios instance factory + JWT interceptor
+│   └── rowActivation.ts  # isActionTarget() — shared list-row/card click/dblclick activation guard
 │
 ├── utils/                # Utility functions
 │   └── format.ts         # formatCurrency, formatDate helpers

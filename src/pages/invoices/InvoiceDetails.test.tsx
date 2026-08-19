@@ -61,4 +61,36 @@ describe('InvoiceDetails', () => {
     // "Erika Musterfrau" now appears for both the Company row (fallback) and the Contact row.
     expect(screen.getAllByText('Erika Musterfrau')).toHaveLength(2);
   });
+
+  it('wraps the line-items table in its own horizontal-scroll container, not the page', () => {
+    mockStore({
+      ...baseInvoice,
+      lineItems: [{ id: 'li1', itemName: 'Consulting', quantity: 1, unitPrice: 100, total: 100 }],
+    });
+    render(<InvoiceDetails />, { wrapper: MemoryRouter });
+    const table = screen.getByRole('table');
+    // The table's own scroll boundary must be an ancestor closer than the page — its immediate
+    // wrapper carries overflow-x-auto, so a wide table scrolls within itself (req 18) instead of
+    // stretching the page (req 19).
+    expect(table.parentElement).toHaveClass('overflow-x-auto');
+  });
+
+  it('lets the header row wrap so Download PDF/Edit never overflow a narrow viewport', () => {
+    mockStore(baseInvoice);
+    render(<InvoiceDetails />, { wrapper: MemoryRouter });
+    const heading = screen.getByRole('heading', { name: /Invoice/ });
+    expect(heading.closest('div')?.parentElement).toHaveClass('flex-wrap');
+  });
+
+  it('lets a long detail value wrap instead of overflowing the page', () => {
+    mockStore(baseInvoice);
+    render(<InvoiceDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByText('Acme GmbH')).toHaveClass('break-words');
+  });
+
+  it('lets the heading wrap instead of overflowing the page', () => {
+    mockStore(baseInvoice);
+    render(<InvoiceDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByRole('heading', { name: /Invoice/ })).toHaveClass('break-words');
+  });
 });

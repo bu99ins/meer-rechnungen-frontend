@@ -1,16 +1,22 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useInvoicesStore } from '../../store/invoicesStore';
 import Pagination from '../../components/Pagination';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Loading from '../../components/Loading';
 import EmptyState from '../../components/EmptyState';
+import CardField from '../../components/CardField';
+import { useIsNarrow } from '../../hooks/useIsNarrow';
+import { isActionTarget } from '../../lib/rowActivation';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { ArrowDownTrayIcon, EyeIcon, PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import type { InvoiceListItem } from '../../types/invoice';
 
 const InvoicesList: React.FC = () => {
   const { list, total, offset, limit, loading, error, fetch, setPage, remove, download } = useInvoicesStore();
   const [toDelete, setToDelete] = useState<string | null>(null);
+  const isNarrow = useIsNarrow();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch();
@@ -23,9 +29,11 @@ const InvoicesList: React.FC = () => {
 
   const rows = useMemo(() => list, [list]);
 
+  const openDetail = (id: string) => navigate(`/invoices/${id}`);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Invoices</h1>
           <p className="text-sm text-brand-gray">Manage invoices, view details, and download PDFs.</p>
@@ -39,45 +47,60 @@ const InvoicesList: React.FC = () => {
         <Loading label="Loading invoices..." />
       ) : rows.length === 0 ? (
         <EmptyState title="No invoices yet" description="Create your first invoice to get started." actionText="New Invoice" actionTo="/invoices/new" />
+      ) : isNarrow ? (
+        <div className="space-y-3">
+          {rows.map((inv) => (
+            <InvoiceCard key={inv.id} invoice={inv} onOpen={() => openDetail(inv.id)} onDelete={() => setToDelete(inv.id)} onDownload={() => download(inv.id)} />
+          ))}
+          <Pagination total={total} offset={offset} limit={limit} onChange={onChangePage} />
+        </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice #</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Due Date</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
-              {rows.map((inv) => (
-                <tr key={inv.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.invoiceDate)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.dueDate)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(inv.totalAmount, inv.currency)}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <div className="flex items-center gap-2 justify-end">
-                      <Link to={`/invoices/${inv.id}`} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="View">
-                        <EyeIcon className="h-4 w-4" />
-                      </Link>
-                      <Link to={`/invoices/${inv.id}/edit`} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="Edit">
-                        <PencilSquareIcon className="h-4 w-4" />
-                      </Link>
-                      <button onClick={() => download(inv.id)} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="Download PDF">
-                        <ArrowDownTrayIcon className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => setToDelete(inv.id)} className="inline-flex items-center px-2 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50" title="Delete">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice #</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Due Date</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {rows.map((inv) => (
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-gray-50 cursor-default"
+                    onDoubleClick={(e) => {
+                      if (!isActionTarget(e.target)) openDetail(inv.id);
+                    }}
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">{inv.invoiceNumber}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.invoiceDate)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.dueDate)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(inv.totalAmount, inv.currency)}</td>
+                    <td className="px-4 py-3 text-sm text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <Link to={`/invoices/${inv.id}`} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="View">
+                          <EyeIcon className="h-4 w-4" />
+                        </Link>
+                        <Link to={`/invoices/${inv.id}/edit`} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="Edit">
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </Link>
+                        <button onClick={() => download(inv.id)} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="Download PDF">
+                          <ArrowDownTrayIcon className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => setToDelete(inv.id)} className="inline-flex items-center px-2 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50" title="Delete">
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="px-4 pb-4">
             <Pagination total={total} offset={offset} limit={limit} onChange={onChangePage} />
           </div>
@@ -104,5 +127,46 @@ const InvoicesList: React.FC = () => {
     </div>
   );
 };
+
+const InvoiceCard: React.FC<{
+  invoice: InvoiceListItem;
+  onOpen: () => void;
+  onDelete: () => void;
+  onDownload: () => void;
+}> = ({ invoice, onOpen, onDelete, onDownload }) => (
+  <div
+    data-testid="invoice-card"
+    className="bg-white border border-gray-200 rounded-lg p-4 space-y-3 cursor-pointer"
+    onClick={(e) => {
+      if (!isActionTarget(e.target)) onOpen();
+    }}
+  >
+    <div className="flex items-start justify-between gap-3">
+      {/* The one real link on the card — View has been dropped from the action row (req 20), so
+          this is the keyboard/assistive-technology route to the detail page (req 15). Its own
+          click bubbles into the card's onClick above, where isActionTarget recognises it and the
+          card doesn't try to navigate a second time. */}
+      <Link to={`/invoices/${invoice.id}`} className="text-sm font-semibold text-gray-900 hover:underline">
+        {invoice.invoiceNumber}
+      </Link>
+    </div>
+    <div className="grid grid-cols-3 gap-3">
+      <CardField label="Invoice Date" value={formatDate(invoice.invoiceDate)} />
+      <CardField label="Due Date" value={formatDate(invoice.dueDate)} />
+      <CardField label="Total" value={formatCurrency(invoice.totalAmount, invoice.currency)} align="right" />
+    </div>
+    <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-gray-100">
+      <Link to={`/invoices/${invoice.id}/edit`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm" title="Edit">
+        <PencilSquareIcon className="h-4 w-4" /> Edit
+      </Link>
+      <button onClick={onDownload} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm" title="Download PDF">
+        <ArrowDownTrayIcon className="h-4 w-4" /> Download PDF
+      </button>
+      <button onClick={onDelete} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-sm" title="Delete">
+        <TrashIcon className="h-4 w-4" /> Delete
+      </button>
+    </div>
+  </div>
+);
 
 export default InvoicesList;
