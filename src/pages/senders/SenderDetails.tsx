@@ -10,7 +10,7 @@ const Row: React.FC<{ label: string; value?: string | null }> = ({ label, value 
   if (!value || !value.trim()) return null;
   return (
     <div className="grid grid-cols-12 py-2">
-      <div className="col-span-4 text-sm text-gray-500">{label}</div>
+      <div className="col-span-4 text-sm text-brand-gray">{label}</div>
       <div className="col-span-8 text-sm text-gray-900">{value}</div>
     </div>
   );
@@ -29,9 +29,9 @@ const SenderDetails: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">{current.senderCompanyName}</h1>
-          <p className="text-sm text-gray-600">{current.senderFullName}</p>
+          <p className="text-sm text-brand-gray">{current.senderFullName}</p>
         </div>
-        <Link to={`/senders/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">
+        <Link to={`/senders/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-brand-deep text-white hover:bg-brand-deep-dark">
           <PencilSquareIcon className="h-4 w-4" /> Edit
         </Link>
       </div>

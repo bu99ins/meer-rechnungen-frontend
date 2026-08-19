@@ -1,5 +1,9 @@
-﻿export function formatCurrency(amount: number, currency = 'USD') {
+﻿// No default currency: a missing/blank/invalid code must never silently present as USD (or any
+// other currency) — it falls back to a plain number with no symbol instead. No conversion ever
+// happens here; this only changes which symbol/format the stored amount is displayed with.
+export function formatCurrency(amount: number, currency?: string) {
   if (isNaN(amount as any)) return '-';
+  if (!currency || !currency.trim()) return amount.toFixed(2);
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
   } catch {

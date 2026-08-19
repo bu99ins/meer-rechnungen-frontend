@@ -8,7 +8,7 @@ import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
 
 const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
   <div className="grid grid-cols-12 py-2">
-    <div className="col-span-4 text-sm text-gray-500">{label}</div>
+    <div className="col-span-4 text-sm text-brand-gray">{label}</div>
     <div className="col-span-8 text-sm text-gray-900">{value ?? '-'}</div>
   </div>
 );
@@ -30,13 +30,13 @@ const InvoiceDetails: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Invoice {current.invoiceNumber}</h1>
-          <p className="text-sm text-gray-600">Issued on {formatDate(current.invoiceDate)} • Due {formatDate(current.dueDate)}</p>
+          <p className="text-sm text-brand-gray">Issued on {formatDate(current.invoiceDate)} • Due {formatDate(current.dueDate)}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => id && download(id)} className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">
             <ArrowDownTrayIcon className="h-4 w-4" /> Download PDF
           </button>
-          <Link to={`/invoices/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">
+          <Link to={`/invoices/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-brand-deep text-white hover:bg-brand-deep-dark">
             <PencilSquareIcon className="h-4 w-4" /> Edit
           </Link>
         </div>
@@ -70,10 +70,10 @@ const InvoiceDetails: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Item</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Qty</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Unit Price</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">

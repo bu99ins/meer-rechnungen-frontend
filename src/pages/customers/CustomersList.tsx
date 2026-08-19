@@ -26,9 +26,9 @@ const CustomersList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Customers</h1>
-          <p className="text-sm text-gray-600">Manage your customers.</p>
+          <p className="text-sm text-brand-gray">Manage your customers.</p>
         </div>
-        <Link to="/customers/new" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700">
+        <Link to="/customers/new" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark">
           <PlusIcon className="h-4 w-4" /> New Customer
         </Link>
       </div>
@@ -42,10 +42,10 @@ const CustomersList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Company</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Contact</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Email</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">

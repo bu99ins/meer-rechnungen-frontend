@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useInvoicesStore } from '../../store/invoicesStore';
 import { useCustomersStore } from '../../store/customersStore';
 import { useSendersStore } from '../../store/sendersStore';
-import { NumberInput, SelectInput, TextArea, TextInput } from '../../components/Form';
+import { NumberInput, RequiredLegend, SelectInput, TextArea, TextInput } from '../../components/Form';
 import Loading from '../../components/Loading';
 import type { LineItem, InvoiceUpsert } from '../../types/invoice';
 import { toNumber } from '../../utils/format';
@@ -138,15 +138,17 @@ const InvoiceForm: React.FC<Props> = ({ mode }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">{mode === 'create' ? 'New Invoice' : `Edit Invoice ${invoiceNumber}`}</h1>
-          <p className="text-sm text-gray-600">Provide invoice details, select Customer and Sender, and add line items.</p>
+          <p className="text-sm text-brand-gray">Provide invoice details, select Customer and Sender, and add line items.</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => navigate(-1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button disabled={!canSave || saving} type="submit" className="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
+          <button disabled={!canSave || saving} type="submit" className="px-3 py-2 rounded-md bg-brand-deep text-white hover:bg-brand-deep-dark disabled:opacity-50">
             {saving ? 'Saving...' : mode === 'create' ? 'Create Invoice' : 'Save Changes'}
           </button>
         </div>
       </div>
+
+      <RequiredLegend />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

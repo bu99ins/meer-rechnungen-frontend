@@ -18,7 +18,7 @@ const ConfirmDialog: React.FC<Props> = ({ open, title, description, confirmText 
       <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
         <div className="p-5">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          {description && <p className="mt-2 text-sm text-gray-600">{description}</p>}
+          {description && <p className="mt-2 text-sm text-brand-gray">{description}</p>}
         </div>
         <div className="px-5 pb-5 flex items-center justify-end gap-2">
           <button onClick={onCancel} className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">{cancelText}</button>

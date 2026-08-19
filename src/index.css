@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary-blue: #4f46e5;
-  --user-bubble-bg: #f5f7ff;
-  --ai-bubble-bg: #ffffff;
-}
-
 html {
   scroll-behavior: smooth;
 }

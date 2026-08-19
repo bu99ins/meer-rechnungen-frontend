@@ -15,7 +15,7 @@ const Pagination: React.FC<Props> = ({ total, offset, limit, onChange }) => {
 
   return (
     <div className="mt-4 flex items-center justify-between">
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-brand-gray">
         Page {page} of {totalPages} • {total} items
       </div>
       <div className="flex items-center gap-2">
