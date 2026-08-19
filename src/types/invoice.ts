@@ -6,17 +6,13 @@
   total: number;
 };
 
-// List item shape from FRONTEND.MD: id, invoiceNumber, invoiceDate, dueDate, totalAmount
+// List item shape from FRONTEND.MD: id, invoiceNumber, invoiceDate, dueDate, currency, totalAmount
 export type InvoiceListItem = {
   id: string;
   invoiceNumber: string;
   invoiceDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
   dueDate: string; // "yyyy-MM-dd" calendar date, no time/timezone component
-  // Optional, not string: the backend's GetInvoices projection does not actually include currency
-  // (docs/api-contract.md documents it, but the real response never sends it — see the invoices
-  // list currency fix in the visual-identity change). A non-optional type here would promise a
-  // value that is never present at runtime.
-  currency?: string;
+  currency: string;
   totalAmount: number;
 };
 

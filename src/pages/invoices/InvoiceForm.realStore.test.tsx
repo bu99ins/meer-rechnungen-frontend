@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import InvoiceForm from './InvoiceForm';
@@ -44,12 +44,16 @@ const sender: Sender = {
 	senderEmail: '',
 };
 
+// Deliberately a non-EUR currency: the create-form default is EUR (see the create-mode describe
+// block below), so an EUR fixture here would let the edit-mode load assertions pass by
+// coincidence even if edit mode stopped loading the invoice's own stored currency and fell back
+// to the create default instead.
 const invoice: InvoiceDetail = {
 	id: 'i1',
 	invoiceNumber: 'INV-2024-001',
 	invoiceDate: '2024-01-15',
 	dueDate: '2024-02-15',
-	currency: 'EUR',
+	currency: 'USD',
 	notes: 'Thanks for your business',
 	customer: {
 		id: 'c1',
@@ -92,6 +96,10 @@ afterEach(() => {
 	useInvoicesStore.setState({ current: undefined, loading: false, error: undefined, list: [], total: 0, offset: 0, limit: 10 });
 	useCustomersStore.setState({ current: undefined, loading: false, error: undefined, list: [], total: 0, offset: 0, limit: 10 });
 	useSendersStore.setState({ current: undefined, loading: false, error: undefined, list: [], total: 0, offset: 0, limit: 10 });
+	// The service mocks are module-level too — a call recorded by one test (e.g. an earlier
+	// create-mode submission) would otherwise still be in `createInvoice`'s call history for a
+	// later test asserting `.not.toHaveBeenCalled()`, passing that assertion for the wrong reason.
+	vi.clearAllMocks();
 });
 
 describe('InvoiceForm edit-mode load, against the real store', () => {
@@ -103,7 +111,7 @@ describe('InvoiceForm edit-mode load, against the real store', () => {
 		renderEdit('i1');
 
 		expect(await screen.findByLabelText('Invoice Number')).toHaveValue('INV-2024-001');
-		expect(screen.getByLabelText('Currency')).toHaveValue('EUR');
+		expect(screen.getByLabelText('Currency')).toHaveValue('USD');
 		expect(screen.getByLabelText('Customer')).toHaveValue('c1');
 		expect(screen.getByLabelText('Sender')).toHaveValue('s1');
 		expect(screen.getByLabelText('Tax Rate (%)')).toHaveValue(19);
@@ -116,7 +124,7 @@ describe('InvoiceForm edit-mode load, against the real store', () => {
 		vi.mocked(invoicesService.updateInvoice).mockResolvedValue(invoice);
 		// store.update() re-fetches the list internally after a successful save; stub it explicitly
 		// rather than relying on the store's own try/catch to swallow an unmocked-call rejection.
-		vi.mocked(invoicesService.getInvoices).mockResolvedValue({ items: [{ id: 'i1', invoiceNumber: 'INV-2024-001', invoiceDate: invoice.invoiceDate, dueDate: invoice.dueDate, currency: 'EUR', totalAmount: 238 }], total: 1, offset: 0, limit: 10 });
+		vi.mocked(invoicesService.getInvoices).mockResolvedValue({ items: [{ id: 'i1', invoiceNumber: 'INV-2024-001', invoiceDate: invoice.invoiceDate, dueDate: invoice.dueDate, currency: 'USD', totalAmount: 238 }], total: 1, offset: 0, limit: 10 });
 
 		renderEdit('i1');
 
@@ -136,9 +144,94 @@ describe('InvoiceForm edit-mode load, against the real store', () => {
 				invoiceNumber: 'INV-2024-001',
 				invoiceDate: '2024-01-15',
 				dueDate: '2024-02-15',
+				currency: 'USD',
 				customerId: 'c1',
 				senderId: 's1',
 			})
 		);
+	});
+});
+
+// Regression coverage for the create-form currency default: opening the form fresh must show EUR
+// (this product's users bill in euros), the field must stay editable/required exactly as before,
+// and edit mode (covered above) must never be affected by whatever the create default is.
+describe('InvoiceForm create-mode currency default, against the real store', () => {
+	function renderCreate() {
+		return render(
+			<Routes>
+				<Route path="/invoices/new" element={<InvoiceForm mode="create" />} />
+				{/* Stub target of the post-save navigate() call. */}
+				<Route path="/invoices/:id" element={<div />} />
+			</Routes>,
+			{ wrapper: ({ children }) => <MemoryRouter initialEntries={['/invoices/new']}>{children}</MemoryRouter> }
+		);
+	}
+
+	function mockDropdowns() {
+		vi.mocked(customersService.getCustomers).mockResolvedValue({ items: [customer], total: 1, offset: 0, limit: 100 });
+		vi.mocked(sendersService.getSenders).mockResolvedValue({ items: [sender], total: 1, offset: 0, limit: 100 });
+	}
+
+	async function fillRequiredFields() {
+		await userEvent.type(screen.getByLabelText('Invoice Number'), 'INV-2026-001');
+		fireEvent.change(screen.getByLabelText('Invoice Date'), { target: { value: '2026-08-19' } });
+		fireEvent.change(screen.getByLabelText('Due Date'), { target: { value: '2026-09-19' } });
+		await userEvent.selectOptions(screen.getByLabelText('Customer'), 'c1');
+		await userEvent.selectOptions(screen.getByLabelText('Sender'), 's1');
+	}
+
+	it('pre-fills the Currency field with EUR with no interaction', async () => {
+		mockDropdowns();
+
+		renderCreate();
+
+		expect(await screen.findByLabelText('Invoice Number')).toHaveValue('');
+		expect(screen.getByLabelText('Currency')).toHaveValue('EUR');
+	});
+
+	it('submits EUR when the currency field is left untouched', async () => {
+		mockDropdowns();
+		vi.mocked(invoicesService.createInvoice).mockResolvedValue(invoice);
+
+		renderCreate();
+		await screen.findByLabelText('Invoice Number');
+		await fillRequiredFields();
+
+		await userEvent.click(screen.getByRole('button', { name: 'Create Invoice' }));
+
+		expect(invoicesService.createInvoice).toHaveBeenCalledWith(
+			expect.objectContaining({ currency: 'EUR' })
+		);
+	});
+
+	it('submits the replaced currency when the user types over the EUR default', async () => {
+		mockDropdowns();
+		vi.mocked(invoicesService.createInvoice).mockResolvedValue(invoice);
+
+		renderCreate();
+		await screen.findByLabelText('Invoice Number');
+		await fillRequiredFields();
+		await userEvent.clear(screen.getByLabelText('Currency'));
+		await userEvent.type(screen.getByLabelText('Currency'), 'USD');
+
+		await userEvent.click(screen.getByRole('button', { name: 'Create Invoice' }));
+
+		expect(invoicesService.createInvoice).toHaveBeenCalledWith(
+			expect.objectContaining({ currency: 'USD' })
+		);
+	});
+
+	it('blocks submission when the Currency field is cleared, same as before this change', async () => {
+		mockDropdowns();
+		vi.mocked(invoicesService.createInvoice).mockResolvedValue(invoice);
+
+		renderCreate();
+		await screen.findByLabelText('Invoice Number');
+		await fillRequiredFields();
+		await userEvent.clear(screen.getByLabelText('Currency'));
+
+		await userEvent.click(screen.getByRole('button', { name: 'Create Invoice' }));
+
+		expect(invoicesService.createInvoice).not.toHaveBeenCalled();
 	});
 });
