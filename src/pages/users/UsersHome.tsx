@@ -38,14 +38,14 @@ const UsersHome: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
-        <p className="text-sm text-gray-600">Create a user, or look one up by ID or email.</p>
+        <p className="text-sm text-brand-gray">Create a user, or look one up by ID or email.</p>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
         <h2 className="text-lg font-medium text-gray-900">Create a user</h2>
         <Link
           to="/users/new"
-          className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+          className="inline-flex items-center px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark"
         >
           New User
         </Link>
@@ -64,7 +64,7 @@ const UsersHome: React.FC = () => {
           <button
             type="submit"
             disabled={!userId.trim()}
-            className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark disabled:opacity-50"
           >
             Look up
           </button>
@@ -88,7 +88,7 @@ const UsersHome: React.FC = () => {
           <button
             type="submit"
             disabled={!emailQuery.trim() || lookingUpByEmail}
-            className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark disabled:opacity-50"
           >
             {lookingUpByEmail ? 'Looking up...' : 'Look up'}
           </button>

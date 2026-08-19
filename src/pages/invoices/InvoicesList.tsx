@@ -28,9 +28,9 @@ const InvoicesList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Invoices</h1>
-          <p className="text-sm text-gray-600">Manage invoices, view details, and download PDFs.</p>
+          <p className="text-sm text-brand-gray">Manage invoices, view details, and download PDFs.</p>
         </div>
-        <Link to="/invoices/new" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700">
+        <Link to="/invoices/new" className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark">
           <PlusIcon className="h-4 w-4" /> New Invoice
         </Link>
       </div>
@@ -44,11 +44,11 @@ const InvoicesList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice #</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Invoice Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-brand-gray uppercase tracking-wider">Due Date</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Total</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-brand-gray uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
@@ -57,7 +57,7 @@ const InvoicesList: React.FC = () => {
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.invoiceDate)}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{formatDate(inv.dueDate)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(inv.totalAmount)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(inv.totalAmount, inv.currency)}</td>
                   <td className="px-4 py-3 text-sm text-right">
                     <div className="flex items-center gap-2 justify-end">
                       <Link to={`/invoices/${inv.id}`} className="inline-flex items-center px-2 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50" title="View">

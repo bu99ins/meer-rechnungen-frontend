@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { SelectInput, TextInput } from '../../components/Form';
+import { RequiredLegend, SelectInput, TextInput } from '../../components/Form';
 import { deleteUser, getUserById, resetPassword, setUserRole, updateUserEmail } from '../../services/users';
 import { describeApiError } from '../../lib/problem';
 import { useAuthStore } from '../../store/authStore';
@@ -153,13 +153,13 @@ const UserLookup: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">User</h1>
-        <p className="text-sm text-gray-600">Looked up by ID or email.</p>
+        <p className="text-sm text-brand-gray">Looked up by ID or email.</p>
       </div>
 
       {error && (
         <div className="space-y-3">
           <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">{error}</div>
-          <Link to="/users" className="text-sm text-indigo-600 hover:text-indigo-700">
+          <Link to="/users" className="text-sm text-brand-deep hover:text-brand-deep-dark">
             Back to Users
           </Link>
         </div>
@@ -170,7 +170,7 @@ const UserLookup: React.FC = () => {
           <div className="p-3 rounded-md bg-green-50 border border-green-200 text-sm text-green-700">
             User deleted.
           </div>
-          <Link to="/users" className="text-sm text-indigo-600 hover:text-indigo-700">
+          <Link to="/users" className="text-sm text-brand-deep hover:text-brand-deep-dark">
             Back to Users
           </Link>
         </div>
@@ -180,11 +180,11 @@ const UserLookup: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
             <div className="grid grid-cols-12 py-1">
-              <div className="col-span-3 text-sm text-gray-500">ID</div>
+              <div className="col-span-3 text-sm text-brand-gray">ID</div>
               <div className="col-span-9 text-sm text-gray-900 break-all">{user.id}</div>
             </div>
             <div className="grid grid-cols-12 py-1">
-              <div className="col-span-3 text-sm text-gray-500">Role</div>
+              <div className="col-span-3 text-sm text-brand-gray">Role</div>
               <div className="col-span-9 text-sm text-gray-900">{user.role ?? '(none assigned)'}</div>
             </div>
           </div>
@@ -209,13 +209,14 @@ const UserLookup: React.FC = () => {
               <button
                 type="submit"
                 disabled={savingEmail || !email || email === user.email}
-                className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50"
+                className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark disabled:opacity-50"
               >
                 {savingEmail ? 'Saving...' : 'Save Email'}
               </button>
             </div>
+            <RequiredLegend />
             {hideSelfActions && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-brand-gray">
                 This is your own account: the header will keep showing your old email until you sign
                 in again.
               </p>
@@ -227,7 +228,7 @@ const UserLookup: React.FC = () => {
           <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
             <h2 className="text-lg font-medium text-gray-900">Role</h2>
             {hideSelfActions ? (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-brand-gray">
                 This is your own account. Changing your own role could lock you out, so it can't be
                 done from here.
               </p>
@@ -256,7 +257,7 @@ const UserLookup: React.FC = () => {
                     type="button"
                     onClick={onSetRole}
                     disabled={savingRole || !role}
-                    className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50"
+                    className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark disabled:opacity-50"
                   >
                     {savingRole ? 'Saving...' : 'Set Role'}
                   </button>
@@ -269,7 +270,7 @@ const UserLookup: React.FC = () => {
 
           <form onSubmit={onSetPassword} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
             <h2 className="text-lg font-medium text-gray-900">Password</h2>
-            <p className="text-xs text-gray-500">{PASSWORD_RULES}</p>
+            <p className="text-xs text-brand-gray">{PASSWORD_RULES}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextInput
                 id="newPassword"
@@ -300,12 +301,12 @@ const UserLookup: React.FC = () => {
             <button
               type="submit"
               disabled={savingPassword || !passwordsMatch}
-              className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700 disabled:opacity-50"
+              className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark disabled:opacity-50"
             >
               {savingPassword ? 'Saving...' : 'Set Password'}
             </button>
             {hideSelfActions && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-brand-gray">
                 This is your own account: setting a new password signs you out immediately, since it
                 ends your current session too.
               </p>
@@ -317,7 +318,7 @@ const UserLookup: React.FC = () => {
           <div className="bg-white border border-red-200 rounded-lg p-4 space-y-3">
             <h2 className="text-lg font-medium text-gray-900">Delete account</h2>
             {hideSelfActions ? (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-brand-gray">
                 This is your own account. Deleting it would lock you out, so it can't be done from
                 here.
               </p>

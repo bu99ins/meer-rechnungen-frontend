@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SelectInput, TextInput } from '../../components/Form';
+import { RequiredLegend, SelectInput, TextInput } from '../../components/Form';
 import { register } from '../../services/users';
 import { describeApiError } from '../../lib/problem';
 import { ROLES, isRole } from '../../types/user';
@@ -51,7 +51,7 @@ const UserCreate: React.FC = () => {
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold text-gray-900">User created</h1>
         <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-          <p className="text-sm text-gray-600">New user ID:</p>
+          <p className="text-sm text-brand-gray">New user ID:</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-sm break-all">
               {createdId}
@@ -68,7 +68,7 @@ const UserCreate: React.FC = () => {
           )}
           <button
             onClick={() => navigate('/users')}
-            className="px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+            className="px-3 py-2 rounded-md bg-brand-deep text-white text-sm hover:bg-brand-deep-dark"
           >
             Back to Users
           </button>
@@ -82,7 +82,7 @@ const UserCreate: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">New User</h1>
-          <p className="text-sm text-gray-600">Create an account for a new user.</p>
+          <p className="text-sm text-brand-gray">Create an account for a new user.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -95,12 +95,14 @@ const UserCreate: React.FC = () => {
           <button
             disabled={!canSave || saving}
             type="submit"
-            className="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-brand-deep text-white hover:bg-brand-deep-dark disabled:opacity-50"
           >
             {saving ? 'Creating...' : 'Create User'}
           </button>
         </div>
       </div>
+
+      <RequiredLegend />
 
       <div className="bg-white border border-gray-200 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <TextInput

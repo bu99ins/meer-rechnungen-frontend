@@ -1,4 +1,4 @@
-﻿/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,32 +7,24 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Söhne', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Montserrat', 'system-ui', 'sans-serif'],
       },
       colors: {
-        blue: {
-          primary: '#4f46e5',
-          50: '#f5f7ff',
-          100: '#ecf0ff',
-          200: '#d9e1ff',
-          300: '#b6c4ff',
-          400: '#8494ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+        // Deutsch und Meer brand palette (docs/visual-identity.md), sampled from the business
+        // card artwork. `deep` is the primary action colour; `sky` is an accent only — never the
+        // primary action colour, never the sole carrier of a meaning, never small text on white
+        // (see the spec). `gray` is the muted text tone. `-dark` variants are hover/active states
+        // for the two blues; `tint` is a light deep-blue wash for subtle backgrounds (e.g. icon
+        // circles) that used to carry the old scaffold's purple-blue tint.
+        brand: {
+          deep: '#1066A4',
+          'deep-dark': '#0C4F80',
+          sky: '#1EABE2',
+          'sky-dark': '#1789B7',
+          gray: '#6A6B6D',
+          tint: '#EAF3FA',
         },
-        chatbg: {
-          light: '#ffffff',
-          dark: '#f9fafb',
-        }
       },
-      boxShadow: {
-        'chat-sm': '0 2px 5px -1px rgba(79, 70, 229, 0.1), 0 1px 3px -1px rgba(0, 0, 0, 0.05)',
-        'chat-md': '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'chat-lg': '0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-      }
     },
   },
   plugins: [],

@@ -10,5 +10,6 @@ start there for the high-level architecture and command reference.
 | [api-contract.md](api-contract.md) | Backend endpoints (invoices-back) and request/response data models |
 | [state-management.md](state-management.md) | Zustand store shapes and actions |
 | [features-and-workflows.md](features-and-workflows.md) | User-facing features and UI workflows |
+| [visual-identity.md](visual-identity.md) | Brand palette, typeface, and the seagull-and-waves mark |
 | [development-guide.md](development-guide.md) | Environment setup, build details, patterns for adding pages/endpoints |
 | [known-issues-and-roadmap.md](known-issues-and-roadmap.md) | Known issues, considerations, and recommended next steps |

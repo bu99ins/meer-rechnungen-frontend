@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { SelectInput, TextArea, TextInput } from '../../components/Form';
+import { RequiredLegend, SelectInput, TextArea, TextInput } from '../../components/Form';
 import Loading from '../../components/Loading';
 import { useCustomersStore } from '../../store/customersStore';
 import { requiresCompanyFields } from '../../lib/customerClassification.js';
@@ -99,15 +99,17 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
           <h1 className="text-2xl font-semibold text-gray-900">
             {mode === 'create' ? 'New Customer' : `Edit ${resolveCustomerDisplayName({ companyName, customerName }) || 'Customer'}`}
           </h1>
-          <p className="text-sm text-gray-600">Provide customer details.</p>
+          <p className="text-sm text-brand-gray">Provide customer details.</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => navigate(-1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button disabled={!canSave || saving} type="submit" className="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
+          <button disabled={!canSave || saving} type="submit" className="px-3 py-2 rounded-md bg-brand-deep text-white hover:bg-brand-deep-dark disabled:opacity-50">
             {saving ? 'Saving...' : mode === 'create' ? 'Create Customer' : 'Save Changes'}
           </button>
         </div>
       </div>
+
+      <RequiredLegend />
 
       <div className="bg-white border border-gray-200 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <SelectInput
