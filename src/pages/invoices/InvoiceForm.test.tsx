@@ -54,6 +54,7 @@ const withCompanyName: Customer = {
   customerEmail: 'erika@acme.example',
   customerTaxVatId: 'DE123456789',
   customerType: 'Business',
+  documentLanguage: 'Estonian',
 };
 
 describe('InvoiceForm customer picker', () => {

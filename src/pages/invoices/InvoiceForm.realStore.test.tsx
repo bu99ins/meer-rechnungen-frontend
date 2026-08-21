@@ -31,6 +31,7 @@ const customer: Customer = {
 	customerEmail: 'erika@acme.example',
 	customerTaxVatId: 'DE123456789',
 	customerType: 'Business',
+	documentLanguage: 'Estonian',
 };
 
 const sender: Sender = {

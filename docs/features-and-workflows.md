@@ -8,12 +8,20 @@
 2. **Create/Edit form**: dedicated page with customer/sender selection and line items
 3. **Details view**: read-only invoice display + PDF download button
 4. **PDF download**: calls the backend `GET /api/invoices/{id}/download` endpoint; parses the
-   `Content-Disposition` header for the filename and falls back to `invoice-<id>.pdf`
+   `Content-Disposition` header for the filename and falls back to `invoice-<id>.pdf`. The PDF's
+   fixed text, dates, numbers, and the filename itself are generated in the invoice's customer's
+   `documentLanguage` (Estonian or English) — the web application's own interface stays English
+   regardless. `src/services/invoices.ts`'s `downloadInvoicePdf` reads the RFC 5987 extended
+   `filename*=UTF-8''...` header parameter before the plain `filename="..."` one, so a customer
+   name with diacritics (e.g. `Müller`) saves intact rather than as the ASCII-only fallback the
+   backend also sends.
 
 ## Customer management
 
 1. **List**: paginated customer table (company, name, email, tax ID)
-2. **CRUD**: create, view, edit, delete
+2. **CRUD**: create, view, edit, delete — the create/edit form and the details page also show the
+   customer's **Document Language** (Estonian or English), pre-selected to Estonian on create;
+   the invoice list, details, and create/edit pages are unchanged by this and show no language
 3. **Used in**: invoice forms (dropdown/selector)
 
 ## Sender management

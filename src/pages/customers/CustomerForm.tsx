@@ -5,7 +5,7 @@ import Loading from '../../components/Loading';
 import { useCustomersStore } from '../../store/customersStore';
 import { requiresCompanyFields } from '../../lib/customerClassification.js';
 import { resolveCustomerDisplayName } from '../../lib/customerDisplay.js';
-import type { CustomerType } from '../../types/customer';
+import type { CustomerType, DocumentLanguage } from '../../types/customer';
 
 type Props = { mode: 'create' | 'edit' };
 
@@ -22,6 +22,9 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
   const [customerTaxVatId, setCustomerTaxVatId] = useState('');
   // Individual by default, matching the backend's own default on Create (spec requirement 1).
   const [customerType, setCustomerType] = useState<CustomerType>('Individual');
+  // Estonian by default, matching the backend's own default on Create (spec
+  // invoice-document-localization.md requirement 2).
+  const [documentLanguage, setDocumentLanguage] = useState<DocumentLanguage>('Estonian');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
       setCustomerEmail(c.customerEmail);
       setCustomerTaxVatId(c.customerTaxVatId ?? '');
       setCustomerType(c.customerType);
+      setDocumentLanguage(c.documentLanguage);
     }
   }, [mode, store.current]);
 
@@ -66,10 +70,11 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
     e.preventDefault();
     if (!canSave) return;
     setSaving(true);
-    // customerType is always sent explicitly — for Update, the backend rejects an omitted value
-    // (see specs/customer-classification-toggle.md requirement 2): relying on any default here
-    // would either corrupt data or fail validation on every save.
-    const payload = { companyName, customerName, customerAddress, postalCode, customerEmail, customerTaxVatId, customerType };
+    // customerType and documentLanguage are always sent explicitly — for Update, the backend
+    // rejects an omitted value for either (see specs/customer-classification-toggle.md
+    // requirement 2 and specs/invoice-document-localization.md requirement 1): relying on any
+    // default here would either corrupt data or fail validation on every save.
+    const payload = { companyName, customerName, customerAddress, postalCode, customerEmail, customerTaxVatId, customerType, documentLanguage };
     try {
       if (mode === 'create') {
         const created = await store.create(payload);
@@ -121,6 +126,16 @@ const CustomerForm: React.FC<Props> = ({ mode }) => {
         >
           <option value="Individual">Individual</option>
           <option value="Business">Business</option>
+        </SelectInput>
+        <SelectInput
+          id="documentLanguage"
+          label="Document Language"
+          value={documentLanguage}
+          onChange={(e) => setDocumentLanguage(e.target.value as DocumentLanguage)}
+          className="sm:col-span-2"
+        >
+          <option value="Estonian">Estonian</option>
+          <option value="English">English</option>
         </SelectInput>
         {isBusiness && (
           <TextInput id="companyName" label="Company Name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />

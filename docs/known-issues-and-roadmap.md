@@ -5,8 +5,13 @@
 ### Content-Disposition parsing (`src/services/invoices.ts`)
 - Axios v1+ uses `AxiosHeaders`, which may not expose headers consistently in browser context,
   so `downloadInvoicePdf()` reads the header via both `.get()` and plain property access.
-- Manual regex parsing extracts the filename (supports `filename*=UTF-8''…` and
-  `filename="…"` forms).
+- Manual regex parsing extracts the filename, checking the RFC 5987 extended
+  `filename*=UTF-8''…` form **before** the plain `filename="…"` one, regardless of which
+  appears first in the header. The two forms are not interchangeable: the backend (ASP.NET
+  Core's `Results.File`) sends both — the plain form as an ASCII-only fallback (any diacritic
+  replaced, e.g. `Müller` → `M_ller`) and the extended form carrying every character intact —
+  and checking in header order rather than preference order would silently mangle a downloaded
+  filename that contains diacritics (spec invoice-document-localization.md requirement 22).
 - **Fallback**: uses `invoice-<id>.pdf` if header parsing fails.
 
 ### Token management

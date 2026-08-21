@@ -33,6 +33,7 @@ const CustomerDetails: React.FC = () => {
         <DetailRow label="Address" value={current.customerAddress} />
         <DetailRow label="Postal Code" value={current.postalCode} />
         <DetailRow label="Tax/VAT" value={current.customerTaxVatId} />
+        <DetailRow label="Document Language" value={current.documentLanguage} />
       </div>
     </div>
   );

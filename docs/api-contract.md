@@ -111,6 +111,7 @@ TypeScript sources: [src/types/](../src/types/).
     customerEmail: string;
     customerTaxVatId: string;
     customerType: 'Individual' | 'Business';
+    documentLanguage: 'Estonian' | 'English';
   };
   sender: {
     id: string;
@@ -173,6 +174,7 @@ the customer/sender details pages.
   customerEmail: string;
   customerTaxVatId: string | null;
   customerType: 'Individual' | 'Business';
+  documentLanguage: 'Estonian' | 'English';
 }
 ```
 `customerType` is `'Individual'` or `'Business'`. `companyName`, `customerAddress`, `postalCode`,
@@ -189,6 +191,16 @@ being applied) — the frontend must always send it, including on saves where th
 itself is unchanged. `GET /api/invoices` list items do not embed customer data at all, so
 `customerType` (like the rest of the customer shape) does not appear there. `customerName` and
 `customerEmail` remain required non-blank and are never `null`.
+
+`documentLanguage` is `'Estonian'` or `'English'` — the language the customer's downloaded invoice
+PDF is generated in (fixed text, dates, numbers, and the filename's invoice word; see
+[features-and-workflows.md](features-and-workflows.md#invoice-management) for the download
+workflow). It is always present — there is no `null`/unset state — and is
+handled exactly like `customerType`: Create defaults it to `'Estonian'` when omitted (matching the
+`CustomerForm` control's pre-selected value), and Update requires it explicitly on every request,
+the same "always send it, even unchanged" rule as `customerType`. `GET /api/invoices` list items
+omit it along with the rest of the embedded customer shape, for the same reason `customerType`
+is omitted there.
 
 ### Sender
 ```typescript
