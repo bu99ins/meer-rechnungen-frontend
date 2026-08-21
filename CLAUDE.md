@@ -8,6 +8,30 @@ React 19 / TypeScript / Vite 6 SPA for invoice management (invoices, customers, 
 
 Detailed reference docs (API contract & data models, store shapes, workflows, known issues) live in [docs/](docs/README.md).
 
+## Where the specs live
+
+This repository is one part of the **MeerRechnungen** workspace. Its
+specifications and completion records are **not here** — they live in
+the metarepository at the workspace root (two levels up), because a
+change usually spans both this part and the other one:
+
+- `../../specs/<change-name>.md`
+- `../../processed-tasks/<start-date>-<change-name>.md`
+
+For a change that touches product behaviour, **start the agent at the
+workspace root**, not in this repository, so both parts are visible in
+one session. Working here directly is right only for part-local work:
+dependency bumps, build config, refactoring confined to this code.
+
+**Name the change in every commit** — it is the only remaining link
+between this code and the spec that explains it:
+
+```
+Change: <change-name>
+```
+
+See `../../AGENTS.md` for the full layout.
+
 ## Commands
 
 | Command | Purpose |
