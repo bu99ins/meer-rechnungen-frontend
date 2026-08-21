@@ -18,6 +18,7 @@ const baseCustomer: Customer = {
   customerEmail: 'erika@acme.example',
   customerTaxVatId: 'DE123456789',
   customerType: 'Business',
+  documentLanguage: 'Estonian',
 };
 
 function mockStore(current: Customer) {
@@ -88,5 +89,20 @@ describe('CustomerDetails', () => {
     mockStore(baseCustomer);
     render(<CustomerDetails />, { wrapper: MemoryRouter });
     expect(screen.getByRole('heading', { name: 'Acme GmbH' })).toHaveClass('break-words');
+  });
+
+  // spec invoice-document-localization.md, requirement 6: the document language is visible on
+  // the customer details page.
+  it('shows the Document Language row for an Estonian customer', () => {
+    mockStore(baseCustomer);
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByText('Document Language')).toBeInTheDocument();
+    expect(screen.getByText('Estonian')).toBeInTheDocument();
+  });
+
+  it('shows the Document Language row for an English customer', () => {
+    mockStore({ ...baseCustomer, documentLanguage: 'English' });
+    render(<CustomerDetails />, { wrapper: MemoryRouter });
+    expect(screen.getByText('English')).toBeInTheDocument();
   });
 });

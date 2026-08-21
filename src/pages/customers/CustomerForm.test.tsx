@@ -19,6 +19,7 @@ const businessCustomer: Customer = {
   customerEmail: 'erika@acme.example',
   customerTaxVatId: 'DE123456789',
   customerType: 'Business',
+  documentLanguage: 'Estonian',
 };
 
 const individualCustomer: Customer = {
@@ -75,6 +76,77 @@ describe('CustomerForm classification', () => {
     mockStore();
     renderCreate();
     expect(screen.getByLabelText('Customer Type')).toHaveValue('Individual');
+  });
+
+  // spec invoice-document-localization.md, acceptance criterion 1.
+  it('defaults a new customer to Estonian document language', () => {
+    mockStore();
+    renderCreate();
+    expect(screen.getByLabelText('Document Language')).toHaveValue('Estonian');
+  });
+
+  // spec invoice-document-localization.md, acceptance criterion 2.
+  it('loads an existing customer with its document language, and lets it be switched', async () => {
+    mockStore({ current: { ...businessCustomer, documentLanguage: 'English' }, fetchOne: vi.fn().mockResolvedValue(undefined) });
+    renderEdit('c1');
+
+    expect(await screen.findByLabelText('Document Language')).toHaveValue('English');
+
+    await userEvent.selectOptions(screen.getByLabelText('Document Language'), 'Estonian');
+    expect(screen.getByLabelText('Document Language')).toHaveValue('Estonian');
+  });
+
+  it('always includes documentLanguage explicitly in the create payload', async () => {
+    const createSpy = vi.fn().mockResolvedValue({ id: 'new-id' });
+    mockStore({ create: createSpy });
+    renderCreate();
+
+    await userEvent.type(screen.getByLabelText('Customer Name'), 'Jane Doe');
+    await userEvent.type(screen.getByLabelText('Email'), 'jane@example.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Create Customer' }));
+
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ documentLanguage: 'Estonian' })
+    );
+  });
+
+  // spec invoice-document-localization.md, acceptance criterion 2: switching the language and
+  // saving must send the newly-selected value, not the one the customer loaded with.
+  it('sends the newly-selected documentLanguage on save after switching it', async () => {
+    const updateSpy = vi.fn().mockResolvedValue({ id: 'c1' });
+    mockStore({
+      current: { ...businessCustomer, documentLanguage: 'Estonian' },
+      fetchOne: vi.fn().mockResolvedValue(undefined),
+      update: updateSpy,
+    });
+    renderEdit('c1');
+
+    expect(await screen.findByLabelText('Document Language')).toHaveValue('Estonian');
+    await userEvent.selectOptions(screen.getByLabelText('Document Language'), 'English');
+    await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    expect(updateSpy).toHaveBeenCalledWith(
+      'c1',
+      expect.objectContaining({ documentLanguage: 'English' })
+    );
+  });
+
+  it('always includes documentLanguage explicitly in the update payload, even when unchanged', async () => {
+    const updateSpy = vi.fn().mockResolvedValue({ id: 'c1' });
+    mockStore({
+      current: businessCustomer,
+      fetchOne: vi.fn().mockResolvedValue(undefined),
+      update: updateSpy,
+    });
+    renderEdit('c1');
+
+    await screen.findByLabelText('Document Language');
+    await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    expect(updateSpy).toHaveBeenCalledWith(
+      'c1',
+      expect.objectContaining({ documentLanguage: 'Estonian' })
+    );
   });
 
   it('hides Company Name and Tax/VAT ID when Individual is selected, and does not require them to save', async () => {

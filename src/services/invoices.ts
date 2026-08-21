@@ -36,6 +36,32 @@ export async function deleteInvoice(id: string): Promise<void> {
   await api.delete(`${base}/${id}`);
 }
 
+// Extracts the filename from a Content-Disposition header, preferring the RFC 5987 extended
+// `filename*=UTF-8''...` form over the plain `filename="..."` one, regardless of which appears
+// first in the header. The two forms are not interchangeable: ASP.NET Core's Results.File emits
+// both — the plain `filename="..."` form as an ASCII fallback with any non-ASCII character
+// replaced (e.g. `Müller` becomes `M_ller`), and `filename*=UTF-8''...` percent-encoded UTF-8
+// carrying every character intact. A single regex alternation tried left to right would match
+// whichever form happens to appear earlier in the header — the ASCII fallback in the order this
+// backend currently emits it — silently mangling any diacritics in the saved file's name (spec
+// invoice-document-localization.md, requirement 22); checking the extended form unconditionally
+// first avoids depending on that header ordering at all.
+function extractFilename(disposition: string): string | undefined {
+  const extended = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (extended?.[1]) {
+    const raw = decodeURIComponent(extended[1]).trim();
+    if (raw) return raw;
+  }
+
+  const plain = /filename="?([^";]+)"?/i.exec(disposition);
+  if (plain?.[1]) {
+    const raw = decodeURIComponent(plain[1]).trim();
+    if (raw) return raw;
+  }
+
+  return undefined;
+}
+
 export async function downloadInvoicePdf(
   id: string
 ): Promise<{ blob: Blob; filename: string }> {
@@ -49,19 +75,8 @@ export async function downloadInvoicePdf(
     headers?.['content-disposition'] ??
     headers?.['Content-Disposition']
   ) as string | undefined;
-  
-  console.log("disposition: ", disposition);
 
-  let filename = `invoice-${id}.pdf`;
-  if (disposition) {
-    // Try to parse filename from header e.g. attachment; filename="INV-2024-001.pdf"
-    const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(disposition);
-    const raw = decodeURIComponent(match?.[1] || match?.[2] || '').trim();
-    
-    console.log('disposition:', disposition);
-    console.log('filename:', raw);
-    if (raw) filename = raw;
-  }
+  const filename = (disposition && extractFilename(disposition)) || `invoice-${id}.pdf`;
 
   return { blob: response.data as Blob, filename };
 }

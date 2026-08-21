@@ -23,6 +23,7 @@ const businessCustomer: Customer = {
 	customerEmail: 'erika@acme.example',
 	customerTaxVatId: 'DE123456789',
 	customerType: 'Business',
+	documentLanguage: 'Estonian',
 };
 
 function renderEdit(id: string) {
@@ -75,6 +76,7 @@ describe('CustomerForm edit-mode load, against the real store', () => {
 			'c1',
 			expect.objectContaining({
 				customerType: 'Business',
+				documentLanguage: 'Estonian',
 				companyName: 'Acme GmbH',
 				customerTaxVatId: 'DE123456789',
 			})

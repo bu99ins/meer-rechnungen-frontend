@@ -20,6 +20,7 @@ const baseCustomer: Customer = {
   customerEmail: 'erika@acme.example',
   customerTaxVatId: 'DE123456789',
   customerType: 'Business',
+  documentLanguage: 'Estonian',
 };
 
 function mockStore(list: Customer[], overrides: Partial<ReturnType<typeof useCustomersStore>> = {}) {
